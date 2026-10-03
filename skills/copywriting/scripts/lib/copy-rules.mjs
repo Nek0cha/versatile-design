@@ -91,6 +91,14 @@ const dakejanaiTemplate = {
     matchWords(text, /だけ(?:じゃ|では)ない/g, () => '「〜だけじゃない」の型。足し算で言わず、一番の事実を1つ言い切ること'),
 };
 
+const shortItem = (s) => [...s].length <= TRIPLE_ITEM;
+const englishWord = (s) => /^[A-Za-z'-]+$/.test(s);
+function sameForm(a, b) {
+  if (!shortItem(a) || !shortItem(b)) return false;
+  if (englishWord(a) && englishWord(b)) return true;
+  return hasKana(a + b) && [...a].at(-1) === [...b].at(-1);
+}
+
 const tripleList = {
   id: 'triple-list',
   check(text) {
@@ -98,8 +106,14 @@ const tripleList = {
     for (const line of lines(text)) {
       if (!line.text || [...line.text].length > TRIPLE_LINE) continue;
       const items = line.text.split(/[、。]|[,.](?!\d)/).map((s) => s.trim()).filter(Boolean);
-      if (items.length >= 3 && items.every((s) => [...s].length <= TRIPLE_ITEM)) {
-        hits.push({ index: line.start, message: '三つ並べの型。一番伝えたい1つに絞ること' });
+      // 同じ形の項目（日本語は末尾の文字が同じ、英語は1語）が3つ以上続くときだけを三つ並べとする
+      let run = 1;
+      for (let i = 1; i < items.length; i++) {
+        run = sameForm(items[i - 1], items[i]) ? run + 1 : 1;
+        if (run >= 3) {
+          hits.push({ index: line.start, message: '三つ並べの型。一番伝えたい1つに絞ること' });
+          break;
+        }
       }
     }
     return hits;

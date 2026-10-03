@@ -55,5 +55,12 @@ test('scans copy inside tsx', () => {
 });
 test('triple list does not split decimals or thousands separators', () => {
   assert.deepEqual(ids('0.3秒、push の手前で。\n'), []);
-  assert.deepEqual(ids('1,200円、3.5km、朝7時。\n'), ['triple-list']);
+  assert.deepEqual(ids('1.5倍速い、2.5倍安い、3.5倍うまい。\n'), ['triple-list']);
+});
+test('triple list needs three items of the same form', () => {
+  assert.deepEqual(ids('風の音も、陽の傾きも、紙に連れて帰る。\n'), []);
+  assert.deepEqual(ids('設定ファイルなし。待ち時間、0.3秒。\n'), []);
+  assert.deepEqual(ids('おいしく、楽しく、美しく。\n'), ['triple-list']);
+  assert.deepEqual(ids('Fast. Simple. Secure.\n'), ['triple-list']);
+  assert.deepEqual(ids('Ship it. Then sleep.\n'), []);
 });
