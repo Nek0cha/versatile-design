@@ -1,7 +1,7 @@
 # 設計書：文章のスキル（copywriting）
 
 - 作成日：2026-10-03
-- 状態：レビュー待ち
+- 状態：中止（比較評価で効果が確認できなかったため、スキルとしては作らず、書き方のルールだけを `skills/web/references/copy.md` に統合した。経緯は `docs/superpowers/evals/2026-10-03-copywriting-baseline-vs-skill.md` を参照）
 - 対象サブプロジェクト：第2弾（`copywriting`）
 
 ## 1. 目的

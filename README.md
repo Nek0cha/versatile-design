@@ -12,22 +12,20 @@ Claude に「AI 感のない」プロ水準のデザインを出力させるた�
 | `web` | Web のサイト系とアプリ系の UI。React ＋ Tailwind CSS（v4）＋ React Aria Components。禁止パターンの自動チェックとスクリーンショットの撮影スクリプトを含む | 提供中 |
 | `poster` | ポスターなどの静的なグラフィック | 今後の予定 |
 | `motion` | 動画（モーショングラフィックス） | 今後の予定 |
-| `copywriting` | AI っぽくない文章（キャッチコピー、サブコピー、LP の本文）の生成。素材の聞き出し、5つの切り口による量産、空っぽの言葉と定型の型を検出する lint を含む | 提供中 |
 
 - `web` は最初に `design-core` を読む。2つは必ず組で使う。
-- `web` は、利用者がキャッチコピーや本文を渡していない場合に `copywriting` を呼ぶ。`copywriting` を導入していない場合と、ボタンなどの短い文言は、ダミーと分かる仮の文章（「ここに見出し」など）で置かれる。
-- `copywriting` は単独でも使える（`design-core` を読まない）。
+- キャッチコピー、見出し、本文は、`web` の `references/copy.md` の書き方に従って、依頼に書かれた事実から書かれる。依頼の情報が足りない場所と、ボタンなどの短い文言は、ダミーと分かる形（「ここに見出し」など）で置かれる。
 - このスキル集は、frontend-design スキルと併用しない前提で作っている。
 
 ## 導入方法
 
-`web` は `../design-core/` と `../copywriting/` という相対パスで他のスキルを読むため、3つのスキルを同じディレクトリに並べて置く。
+`web` は `../design-core/` という相対パスで `design-core` を読むため、2つのスキルを同じディレクトリに並べて置く。
 
 ### すべてのプロジェクトで使う場合
 
 ```sh
 mkdir -p ~/.claude/skills
-cp -r skills/design-core skills/web skills/copywriting ~/.claude/skills/
+cp -r skills/design-core skills/web ~/.claude/skills/
 ```
 
 ### 特定のプロジェクトだけで使う場合
@@ -36,12 +34,12 @@ Claude Code のプロジェクトの `.claude/skills/` に置く。
 
 ```sh
 mkdir -p <プロジェクト>/.claude/skills
-cp -r skills/design-core skills/web skills/copywriting <プロジェクト>/.claude/skills/
+cp -r skills/design-core skills/web <プロジェクト>/.claude/skills/
 ```
 
 ### 必要なもの
 
-- Node.js 22 以上（`web` と `copywriting` のスクリプトの実行に使う）
+- Node.js 22 以上（`web` のスクリプトの実行に使う）
 - 生成物は React と Tailwind CSS v4 を前提にする。React Aria Components、Iconify（`@iconify/react`）、Motion、GSAP などは、生成するプロジェクトに必要に応じて導入される。
 
 ## スクリーンショット用の playwright の導入
@@ -72,10 +70,9 @@ npx playwright install chromium
 
 ## 調整欄の仕組み
 
-好みは調整欄で上書きできる。
+好みは2か所の調整欄で上書きできる。
 
 - **ユーザーの調整欄**：`skills/design-core/user-preferences.md`。利用者はこのファイルだけに書き込む（好きな色、避けたい色、好きなフォント、避けたいもの、テーマの既定、アニメーションの好みなど）。初期状態は空のひな形であり、空の項目は「好みなし」として扱われる。
-- **文章のユーザーの調整欄**：`skills/copywriting/user-preferences.md`。好きなコピー、避けたい言葉、口調、英語の使い方などを書く。初期状態は空のひな形である。
 - **スキル作者の調整欄**：各 `references/` のファイル内にある「スキル作者の調整欄」の表の初期値。スキル作者が育てていく。
 
 優先順位は次のとおりである。
@@ -90,22 +87,19 @@ npx playwright install chromium
 cp ~/.claude/skills/design-core/user-preferences.md /tmp/user-preferences.md   # 念のため控えを取る
 rsync -a --exclude user-preferences.md skills/design-core/ ~/.claude/skills/design-core/
 rsync -a skills/web/ ~/.claude/skills/web/
-cp ~/.claude/skills/copywriting/user-preferences.md /tmp/copywriting-user-preferences.md
-rsync -a --exclude user-preferences.md skills/copywriting/ ~/.claude/skills/copywriting/
 ```
 
 ## 開発者向けのコマンド
 
 ```sh
 npm install            # 開発用の依存を入れる
-npm test               # lint ルール（デザインと文章）、スクリーンショット、検査ツールのテスト
+npm test               # lint ルール、スクリーンショット、検査ツールのテスト
 npm run check:skills   # SKILL.md の frontmatter、参照先のパス、実例名の匿名化を検査する
 npm run check:recipes  # 部品のレシピのコード例を lint と型検査にかける
 ```
 
 - `npm test` のスクリーンショットのテストは、ブラウザを起動できない環境ではスキップされる。手元の Chromium を使う場合は `CHROMIUM_PATH=<パス> npm test` とする。
 - `npm run check:skills` で実例名の匿名化を検査するには、禁止語を1行に1つ書いたファイルを環境変数 `REFERENCE_DENYLIST` で渡す（例：`REFERENCE_DENYLIST=<ファイル> npm run check:skills`）。対象は `skills/`、`docs/`、`README.md` である。指定がなければ匿名化の検査は省略され、指定したファイルが存在しないか空の場合は警告を出して省略する。禁止語のファイルはリポジトリに含めない。
-- 文章の禁止パターンを増やすときは、`skills/copywriting/references/anti-patterns.md` の「スキル作者の調整欄」の手順に従い、機械で判定できるものは `skills/copywriting/scripts/lib/copy-rules.mjs` にルールを足す。語を足した場合は `anti-patterns.md` の一覧にも書く（テストで一致を検査している）。
 - 禁止パターンを増やすときは、`skills/design-core/references/anti-patterns.md` の「スキル作者の調整欄」の手順に従い、機械で判定できるものは `skills/web/scripts/lib/lint-rules.mjs` にルールを足す。
 
 ## 実例の取り扱い方針

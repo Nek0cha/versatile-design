@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-03-copywriting-design.md`
 
+> **状態：中止。** Task 1〜4 を実装し、Task 5 の比較評価を2回行ったが、合格基準を満たさなかった。スキル作者の判断で `copywriting` スキルと lint は削除し、書き方のルールだけを `skills/web/references/copy.md` に統合した。
+
 ## Global Constraints
 
 - スキル文書・README・コメントは標準語で書き、である調に統一する。関西弁は使わない。
