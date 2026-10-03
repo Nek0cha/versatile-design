@@ -316,7 +316,7 @@ test('detects denylisted term', async () =>
 
 - [ ] **Step 5: 実名リストをスクラッチ領域に作る（リポジトリには入れない）**
 
-スクラッチ領域の `reference-map.md` に記載された実名（サービス名、ドメイン名の主要部分）を1行1語で `reference-denylist.txt` に書き出す。
+スクラッチ領域の `reference-map.md` に記載された実名（サービス名とドメイン名）を1行1語で `reference-denylist.txt` に書き出す。一般的な技術用語と衝突する語（例：CSS の `-apple-system` に含まれる語）は単独で登録せず、ドメイン形式やガイドラインの正式名称で登録する。
 
 Run: `REFERENCE_DENYLIST=<scratchpad>/reference-denylist.txt node tools/check-skills.mjs`
 Expected: `skills/` がまだないため frontmatter の問題は出ず、`docs/` に禁止語が出現しないこと
