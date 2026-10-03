@@ -54,9 +54,10 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 
 | トークン | 用途 |
 |---|---|
-| `--shadow-float` | 浮いているもの（メニュー、ポップオーバー、ダイアログ、浮いたツールバー、トースト）専用の1種類 |
+| `--shadow-float` | 浮いているもの（メニュー、ポップオーバー、ダイアログ、浮いたツールバー、トースト）専用の1種類。高さを表す影はこれだけ |
+| `--shadow-offset` | ぼかさない、ずらした影（`../design-core/references/anti-patterns.md` の K3）。ラベル、バッジ、ボタン、画像の装飾だけに使い、高さの表現には使わない。使わないページでは定義しなくてよい |
 
-影はこれ1つだけを定義する。段階を増やさない（`references/mode-app.md` の影の節）。区切りに影を使わない。値はテーマごとに差し替えるが、名前は1つのままにする。Tailwind v4 は影の値を `shadow-float` クラスに直接書き込むため、色と違って `--shadow-float` を差し替えても効かない。テーマごとの値は `--shadow-float-value` に置き、`@theme inline` の `--shadow-float` から参照する（2節）。ダークでは影がほとんど見えないため、浮いているものには `bg-surface-2` と `border border-line` も付ける（`color.md` の5節）。
+高さ（浮いていること）を表す影は `--shadow-float` の1つだけを定義する。段階を増やさない（`references/mode-app.md` の影の節）。区切りに影を使わない。ほかに使ってよい影は、装飾としての `--shadow-offset` だけである。どちらも値はテーマごとに差し替えるが、名前は1つのままにする。Tailwind v4 は影の値を `shadow-float` クラスに直接書き込むため、色と違って `--shadow-float` を差し替えても効かない。テーマごとの値は `--shadow-float-value` と `--shadow-offset-value` に置き、`@theme inline` の `--shadow-float` と `--shadow-offset` から参照する（2節）。ダークでは影がほとんど見えないため、浮いているものには `bg-surface-2` と `border border-line` も付ける（`color.md` の5節）。
 
 ### フォント
 
@@ -64,7 +65,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 |---|---|
 | `--font-display` | 見出し |
 | `--font-body` | 本文、UI の文字 |
-| `--font-mono` | 数字、コード、ログ |
+| `--font-mono` | 桁を揃える数字、コード、ログ、ID。ラベルや見出しには使わない（`../design-core/references/anti-patterns.md` の X17） |
 
 `font-family` は欧文、和文、総称ファミリーの順に書く（`typography-ja.md` の2.1節）。下の定義例の書体は、組み合わせ表の S1 を例にしたものである。
 
@@ -154,6 +155,8 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --color-success: var(--color-accent);
   /* 影：Tailwind は影の値をクラスに直接書き込むため、テーマで差し替える値は別の変数に置く */
   --shadow-float: var(--shadow-float-value);
+  /* K3 のずらした影（装飾）。使わないページでは、この行と --shadow-offset-value を消す */
+  --shadow-offset: var(--shadow-offset-value);
 }
 
 /* 所要時間（@theme の名前空間にないため :root に置く） */
@@ -163,6 +166,8 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --duration-slow: 240ms;
   --duration-reveal: 800ms;
   --shadow-float-value: 0 12px 32px -8px oklch(0 0 0 / 0.5), 0 2px 8px oklch(0 0 0 / 0.3);
+  /* ぼかし 0、右下へ 6px。色はアクセントの役割名で参照するため、ライトのブロックで書き直さなくてもテーマに追従する */
+  --shadow-offset-value: 6px 6px 0 0 var(--color-accent);
   color-scheme: dark;
 }
 
@@ -222,7 +227,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 - `--color-*: initial;` は、Tailwind の標準パレット（`slate`、`indigo` など）と `black`、`white` をすべて消す。消すと、標準パレットのクラスを書いても CSS が生成されないため、使えば画面上ですぐ気づく。`bg-transparent` と `bg-current` は `@theme` に依存しないため残る。
 - 角丸、影、フォント、イージング、`animate-*` も同じ書き方で既定値を消す。`--animate-*` の既定値には `linear` のアニメーションが含まれるため、残さない。
 - `--default-font-family` には `--font-body` と同じ値を直接書く。Tailwind が `html` に当てる書体であり、`--font-*: initial;` で既定の参照先が消えるためである。
-- 影だけは `--shadow-float` ではなく `--shadow-float-value` を差し替える（1節の影）。
+- 影だけは `--shadow-float` ではなく `--shadow-float-value` を差し替える（1節の影）。`--shadow-offset-value` は色をトークン（`var(--color-accent)` か `var(--color-text-strong)`）で参照するため、ライトのブロックで書き直さなくてもテーマに追従する。ずらしの量をテーマで変えたい場合だけ、ライトの2か所にも書く。
 - ライトの値は2か所に同じものを書く。片方だけ直すと、OS の設定によってだけ色が変わる不具合になる。値を変えたら両方を直す。
 - 純粋な黒を基本にする場合（`color.md` の4節）は、ダークの `--color-surface-0` を `oklch(0 0 0)` にし、グレーの彩度を 0 にする。
 
@@ -259,8 +264,10 @@ Tailwind の初期値（標準パレット、`rounded-*` と `shadow-*` の既�
 | `transition-all`、`transition: all` | 意図しないプロパティまで動き、描画も重い（X14） | `transition-colors`、`transition-opacity`、`transition-transform`、`transition-[opacity,transform]` など動かすものを明示する | `transition-all` |
 | `ease-in`、`ease-out`、`ease-in-out`、`ease-linear`、CSS の `ease` と `linear`、タイミング関数のない `transition` | 動きの終わり方が機械的になる（X13）。2節で既定値を消しているが、CSS に直接書けば効いてしまう | `ease-out-quint`、`ease-in-out-quart`、`ease-spring-soft`、CSS では `var(--ease-out-quint)` | `default-easing` |
 | `rounded-xl`、`rounded-2xl`、`rounded-[20px]` など1節にない角丸 | 段階が増え、部品ごとに丸さがばらつく | `rounded-sm`、`rounded-md`、`rounded-island`、`rounded-lg`（丸い形だけ `rounded-full`） | — |
-| `shadow-sm`、`shadow-lg`、`shadow-[...]` など `shadow-float` 以外の影 | 影の段階が増え、区切りに影を使い始める（`references/mode-app.md` の影の節） | `shadow-float`（浮いているものだけ）。区切りは明度差か `border-line` | — |
+| `shadow-sm`、`shadow-lg`、`shadow-[...]` など `shadow-float` と `shadow-offset` 以外の影 | 影の段階が増え、区切りに影を使い始める（`references/mode-app.md` の影の節） | `shadow-float`（浮いているものだけ）。装飾のずらした影は `shadow-offset`（K3 の条件どおりの場合だけ）。区切りは明度差か `border-line` | — |
 | `font-sans`、`font-serif` と、定番フォントだけの `font-family` | 定番フォントだけで組むと誰が作っても同じ印象になる（X5） | `font-display`、`font-body`、`font-mono` | `generic-font-only` |
+| ラベルや見出しの `font-mono`（特に `uppercase` や `tracking-widest` との組み合わせ） | AI が作った画面の定番の見た目になる（X17） | `font-body` か `font-display` に字間（`tracking-*`）を付ける。`font-mono` は数字、コード、ID だけ | `mono-label` |
+| 角丸の囲みに片側だけ太い線（`rounded-lg border-l-4` など） | 線の両端が角丸に沿って曲がる、AI の UI の定番の型（X19） | 帯をやめるか、帯の側の角丸をなくす（`rounded-r-md border-l-4`）か、角丸の内側に収めた直線の帯にする | `rounded-accent-rail` |
 | `animate-spin`、`animate-pulse` など既定のアニメーション | 定番の動きで、`linear` の回転も含む | 必要な動きを `references/motion-web.md` に従って作る | — |
 | `duration-150` など段階にない所要時間 | 手触りが揃わない | `duration-(--duration-fast)`、`duration-(--duration-base)`、`duration-(--duration-slow)` | — |
 

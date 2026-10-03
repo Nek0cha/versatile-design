@@ -91,7 +91,7 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 
 - `<生成物のディレクトリ>` には、`src` など生成したコードのあるディレクトリ（`index.html` があればそれも）を渡す。`node_modules`、`dist`、`build`、`.git`、`.next` は自動で除外される。
 - 終了コード 0 は違反なし、1 は違反あり、2 は引数の誤りである。違反は `ファイル:行番号  ルール名  理由` の形で出る。違反がゼロになるまで直す。
-- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
+- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`mono-label`、`rounded-accent-rail`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
 - 抑制は、条件付き（K）の項目を条件どおりに使う場合など、機能上の理由を1文で言える場合に限る。書き方は下の「抑制コメントの置き場所」に従う。抑制したものはすべて報告に書く。
 
 #### 抑制コメントの置き場所
@@ -101,8 +101,8 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 | ルール | 報告される行（この行のすぐ上に書く） |
 |---|---|
 | `text-arrow`、`emoji-icon` | 矢印や絵文字の文字そのものがある行。複数行にわたる要素では、開始タグの行ではなく、その文字がある子の行 |
-| `gradient-text`（CSS） | 宣言のまとまりの `{` がある行。セレクタと `{` が同じ行ならセレクタの行、`{` だけを次の行に書いた場合はその `{` の行 |
-| `gradient-text`、`purple-blue-gradient`（クラス） | `className=`（または `class=`）がある行 |
+| `gradient-text`、`mono-label`、`rounded-accent-rail`（CSS） | 宣言のまとまりの `{` がある行。セレクタと `{` が同じ行ならセレクタの行、`{` だけを次の行に書いた場合はその `{` の行 |
+| `gradient-text`、`purple-blue-gradient`、`mono-label`、`rounded-accent-rail`（クラス） | `className=`（または `class=`）がある行 |
 | `purple-blue-gradient`（CSS） | `linear-gradient(` などのグラデーション関数がある行 |
 | 上記以外 | 該当するクラス名、宣言、`<select`、`type="number"` がある行 |
 

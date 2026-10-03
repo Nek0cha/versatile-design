@@ -43,4 +43,21 @@
 
 ## 判定
 
-スキル作者の判定待ちである（合格基準：4つ中4つでスキルありの方が AI 感が薄い）。判定とダメ出しは、受け取りしだいこの節と `anti-patterns.md`・`critique.md` に反映する。
+スキル作者の判定（2026-10-03）：
+
+- お題3・4（アプリ系）：スキルありの方がはっきり良い（「めっちゃええ」）。
+- お題1・2（サイト系）：差はアプリ系ほど大きくないが、AI 感は消えている。
+- 合格基準（4つ中4つでスキルありの方が AI 感が薄い）：**4/4 で満たした。**
+
+### ダメ出しと反映先
+
+| 指摘 | 種類 | 反映先 |
+|---|---|---|
+| 「TODAY'S MENU」のような等幅フォントの小さなラベル（大文字・広い字間）は AI 感がある | 絶対禁止 X17、lint `mono-label` | `anti-patterns.md`、`critique.md` の C12、`typography-ja.md`、`tokens-tailwind.md`、`mode-site.md` の3.2節、`mode-app.md` の5節、lint |
+| 「● 稼働中」のような色の点＋状態の文字は AI 感がある（アバターに重ねる在席の点は例外） | 絶対禁止 X18、自己批評 | `anti-patterns.md`、`critique.md` の C12、`color.md` の1節、`mode-app.md` の7節、`states.md`、`icons.md` |
+| 角丸カードに片側だけ色の線を付け、線の端が角丸に沿って曲がるのは AI の UI の定番 | 絶対禁止 X19、lint `rounded-accent-rail` | `anti-patterns.md`、`critique.md` の C12、`tokens-tailwind.md` の4節、lint |
+| 正常な状態に「ONLINE」のようなラベルを全項目に付けるのは AI 感がある | 絶対禁止 X20、自己批評 | `anti-patterns.md`、`critique.md` の C12、`color.md` の1節、`mode-app.md` の7節、`states.md` |
+| 黒いラベルにアクセントの色のぼかさない影を右下へずらすと AI 感が減る（良い例） | 条件付き K3、トークン `--shadow-offset` | `anti-patterns.md`、`critique.md` の C6・C8・C12、`color.md` の1節と5節、`tokens-tailwind.md`、`mode-app.md` の6.2節、`mode-site.md` の8節 |
+| ページの多い組織のサイトでは、左にロゴと1行の説明、右に小さな見出し付きのリンクの列、最下段に著作権と「ページ上部へ」を置くフッターが良い（外部リンクの印は付けない。任意） | 任意の型 | `mode-site.md` の9節 |
+
+アプリ系の観察（アプリF）のセクション見出しの「点＋字間を広げた大文字」は残し、状態の印ではなく区切りの印であること、等幅フォントを使わないことを `mode-app.md` の5節と `observations/app.md` に書き足した。
