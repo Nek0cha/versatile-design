@@ -127,7 +127,7 @@ export function IssueLabel() {
 ```
 
 - 影は角丸のない形に付けると版ずれらしく見える。角丸を付ける場合は `rounded-sm` までにする。
-- ボタンに付ける場合、押下中は `data-pressed:translate-x-1 data-pressed:translate-y-1 data-pressed:shadow-none` のように、影の位置へ押し込む動きにしてよい。
+- ボタンに付ける場合、押下中は `data-pressed:translate-x-[6px] data-pressed:translate-y-[6px] data-pressed:shadow-none` のように、影の位置へ押し込む動きにしてよい。移動量は `--shadow-offset-value` のずらしの量（定義例では 6px）と同じにし、ボタンがちょうど影の上に収まるようにする。
 
 ## 9. ページの多いサイトのフッター（任意の型）
 

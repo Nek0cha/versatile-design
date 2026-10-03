@@ -329,3 +329,20 @@ test('rounded-accent-rail accepts straight rails and plain rounded borders', () 
   assert.equal(hits('.a { border-left: 4px solid red; border-radius: 0 8px 8px 0; }', 'x.css', 'rounded-accent-rail').length, 0);
   assert.equal(hits('.a { border-left: 4px solid red; }', 'x.css', 'rounded-accent-rail').length, 0);
 });
+
+test('mono-label skips key input and aligned numbers', () => {
+  assert.equal(hits('<kbd className="font-mono text-xs uppercase">Ctrl</kbd>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('<Keyboard className="font-mono uppercase tracking-wide">Esc</Keyboard>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('<span className="font-mono uppercase tabular-nums">00:01:12:05</span>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('.tc { font-family: var(--font-mono); text-transform: uppercase; font-variant-numeric: tabular-nums; }', 'x.css', 'mono-label').length, 0);
+  assert.equal(hits('<span className="font-mono uppercase">見出し</span>', 'x.tsx', 'mono-label').length, 1);
+});
+test('rounded-accent-rail honours an explicit none override on the rail side', () => {
+  assert.equal(hits('<div className="rounded-md rounded-l-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md rounded-s-none border-s-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md rounded-tl-none rounded-bl-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md rounded-r-none border-r-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md rounded-e-none border-e-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md rounded-tl-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div className="rounded-md rounded-r-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+});

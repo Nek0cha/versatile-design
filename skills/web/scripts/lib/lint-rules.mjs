@@ -339,6 +339,15 @@ const MONO_CLASS = /(?<![\w-])font-mono(?![\w-])/;
 const UPPERCASE_CLASS = /(?<![\w-])uppercase(?![\w-])/;
 // 字間を広げるクラス。tracking-tight などの詰める指定と負の値は対象外
 const WIDE_TRACKING_CLASS = /(?<![\w-])tracking-(?:wide|wider|widest|\[\+?(?:\d*\.)?\d+(?:em|rem|px)\])(?![\w-])/;
+const TABULAR_CLASS = /(?<![\w-])tabular-nums(?![\w-])/;
+const KEY_TAG = /^(?:kbd|Keyboard)$/;
+// 属性の位置から、それを持つ開始タグの要素名を返す
+function tagNameBefore(source, index) {
+  const lt = source.lastIndexOf('<', index);
+  if (lt === -1) return '';
+  const m = /^<([A-Za-z][\w.]*)/.exec(source.slice(lt));
+  return m ? m[1] : '';
+}
 const MONO_FAMILY = /font-family\s*:[^;]*(?:monospace|var\(\s*--font-mono\s*\)|var\(\s*--default-mono-font-family\s*\))/;
 
 const monoLabel = {
@@ -349,11 +358,14 @@ const monoLabel = {
       '等幅フォントを大文字や広い字間と組み合わせたラベルや見出しは、AI が作った画面の定番の見た目である。ラベルや見出しは本文か見出しの書体で組み、字間で整える。等幅フォントは桁を揃える数字、コード、ID だけに使う';
     const out = [];
     for (const { index, value } of classAttributes(source)) {
+      // キー入力の表示と、桁を揃える数字は等幅の正しい用途なので対象外
+      if (KEY_TAG.test(tagNameBefore(source, index)) || TABULAR_CLASS.test(value)) continue;
       if (MONO_CLASS.test(value) && (UPPERCASE_CLASS.test(value) || WIDE_TRACKING_CLASS.test(value))) {
         out.push({ index, message });
       }
     }
     for (const { index, body } of cssBlocks(source)) {
+      if (/font-variant-numeric\s*:[^;]*tabular-nums/.test(body)) continue;
       if (MONO_FAMILY.test(body) && /text-transform\s*:\s*uppercase\b/.test(body)) out.push({ index, message });
     }
     return out;
@@ -365,9 +377,24 @@ const monoLabel = {
 const SIDE_BORDER_CLASS = /(?<![\w-])border-([lrse])(?:-(\d+|\[[^\]\s]+\]))?(?![\w-])/g;
 // rounded / rounded-<段階> / rounded-<角か辺>-<段階>。-none は角丸なしとして扱う
 const ROUNDED_CLASS = /(?<![\w-])rounded(?:-(t|r|b|l|s|e|tl|tr|br|bl|ss|se|es|ee|ts|te|bs|be))?(?:-([\w-]+|\[[^\]\s]+\]))?(?![\w-])/g;
-// 角か辺の指定が、左右どちらの辺の角を丸めるか
-const ROUND_LEFT = new Set([undefined, 't', 'b', 'l', 's', 'tl', 'bl', 'ss', 'es', 'ts', 'bs']);
-const ROUND_RIGHT = new Set([undefined, 't', 'b', 'r', 'e', 'tr', 'br', 'se', 'ee', 'te', 'be']);
+// 角か辺の指定が、どの角（左上・左下・右上・右下）に効くか。s と e は左と右として扱う
+const CORNERS = {
+  t: ['tl', 'tr'], b: ['bl', 'br'], l: ['tl', 'bl'], r: ['tr', 'br'], s: ['tl', 'bl'], e: ['tr', 'br'],
+  tl: ['tl'], tr: ['tr'], bl: ['bl'], br: ['br'],
+  ss: ['tl'], es: ['bl'], se: ['tr'], ee: ['br'], ts: ['tl'], bs: ['bl'], te: ['tr'], be: ['br'],
+};
+// 全体の指定 < 辺の指定 < 角の指定 の順に上書きする（Tailwind の出力順と同じ）
+function roundedCorners(value) {
+  const state = { tl: false, tr: false, bl: false, br: false };
+  const hits = [...value.matchAll(ROUNDED_CLASS)].map((m) => ({
+    corners: m[1] ? CORNERS[m[1]] : ['tl', 'tr', 'bl', 'br'],
+    round: !(m[2] === 'none' || m[2] === '[0]' || m[2] === '[0px]'),
+    rank: m[1] ? m[1].length : 0,
+  }));
+  hits.sort((a, b) => a.rank - b.rank);
+  for (const h of hits) for (const c of h.corners) state[c] = h.round;
+  return { left: state.tl || state.bl, right: state.tr || state.br };
+}
 const RAIL_MESSAGE =
   '角丸のカードに片側だけ太い線を付けると、線の両端が角丸に沿って曲がり、AI が作る UI の定番の見た目になる。帯が本当に必要なら、その側の角丸をなくすか、角丸の内側に収めた直線の帯（絶対配置の要素か疑似要素）にして、上から下まで真っすぐ通す';
 
@@ -404,13 +431,7 @@ const roundedAccentRail = {
         sides.add(m[1] === 'l' || m[1] === 's' ? 'left' : 'right');
       }
       if (sides.size === 0) continue;
-      let left = false;
-      let right = false;
-      for (const m of value.matchAll(ROUNDED_CLASS)) {
-        if (m[2] === 'none' || m[2] === '[0]' || m[2] === '[0px]') continue;
-        if (ROUND_LEFT.has(m[1])) left = true;
-        if (ROUND_RIGHT.has(m[1])) right = true;
-      }
+      const { left, right } = roundedCorners(value);
       if ((sides.has('left') && left) || (sides.has('right') && right)) out.push({ index, message: RAIL_MESSAGE });
     }
     for (const { index, body } of cssBlocks(source)) {

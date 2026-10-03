@@ -141,7 +141,7 @@ AI 感を生む定番のパターンを、3段階で管理する。トークン�
 - 禁止事項：「TODAY'S MENU」のような小さな区分のラベル（見出しの上の小さな文字）、セクションの小見出し、見出しを等幅フォントで組む。大文字だけにしたり字間を広げたりした組み合わせが典型である。
 - 理由：生成 AI が「洗練された」「技術的な」印象を出そうとして多用する定番の見た目であり、見た瞬間に AI が作った画面と読まれる。等幅フォントは文字の幅を揃えるための書体で、ラベルを読みやすくする機能を持たない。
 - 代わりに：ラベルと見出しは本文か見出しの書体（Web では `font-body`、`font-display`）で組み、大文字だけの欧文なら字間を広げて整える（`references/typography-ja.md` の2.5節）。等幅フォントは、縦に並べて桁を揃える必要のある数字（表の値、計測値、時刻、タイムコード）、コード、ID とキー入力の表示だけに使う。
-- 検出：lint: `mono-label`（クラスに `font-mono` と `uppercase` か字間を広げる `tracking-*` があるもの、CSS で等幅の `font-family` と `text-transform: uppercase` が同じ宣言のまとまりにあるもの）。小見出しや見出しを等幅で組んだだけのものは自己批評
+- 検出：lint: `mono-label`（クラスに `font-mono` と `uppercase` か字間を広げる `tracking-*` があるもの、CSS で等幅の `font-family` と `text-transform: uppercase` が同じ宣言のまとまりにあるもの。`<kbd>` の要素と、`tabular-nums` を指定した数字は対象外）。小見出しや見出しを等幅で組んだだけのものは自己批評
 
 ### X18 色の点＋状態の文字
 
@@ -155,7 +155,7 @@ AI 感を生む定番のパターンを、3段階で管理する。トークン�
 - 禁止事項：角丸のカードや囲みに、左（または右）だけ太い色の線（`border-left` など）を付ける。線の両端が角丸に沿って曲がる。
 - 理由：お知らせ、引用、注意書き、特徴の一覧などで生成 AI が繰り返し使う UI の定番の型である。端が曲がった線は、帯としても枠としても形が中途半端になる。
 - 代わりに：まず帯なしで、見出しの太さや背景の明度差で区別できないかを考える。帯が本当に必要なら、上から下まで真っすぐに通す。方法は、(1) 帯の側の角丸をなくす（Web では `rounded-r-md` のように反対側だけ丸める）、(2) 帯を絶対配置の内側の要素か疑似要素にし、上下を角丸の半径以上内側に収めて両端を直線で切る、(3) `overflow-hidden` の囲みの中に全高の直線の帯を置く場合は、帯の側の角を四角にする、のどれかである。
-- 検出：lint: `rounded-accent-rail`（クラスに片側の線の太さ `border-l`・`border-r`・`border-s`・`border-e`（`-0` を除く）と、その側を丸める `rounded` 系のクラスがあるもの。CSS で 1px を超える `border-left`・`border-right`・`border-inline-start`・`border-inline-end` と、その側が 0 でない `border-radius` が同じ宣言のまとまりにあるもの）
+- 検出：lint: `rounded-accent-rail`（クラスに片側の線の太さ `border-l`・`border-r`・`border-s`・`border-e`（`-0` を除く）と、その側を丸める `rounded` 系のクラスがあるもの。`rounded-md rounded-l-none` のように、その側の角を `-none` で打ち消していれば対象外。CSS で 1px を超える `border-left`・`border-right`・`border-inline-start`・`border-inline-end` と、その側が 0 でない `border-radius` が同じ宣言のまとまりにあるもの）
 
 ### X20 正常な状態のラベル
 
