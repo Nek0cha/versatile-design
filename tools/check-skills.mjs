@@ -64,6 +64,7 @@ async function checkDenylist(rootDir, denylist, problems) {
   if (!terms.length) return;
   const files = [];
   for (const d of ['skills', 'docs']) files.push(...(await walk(path.join(rootDir, d))));
+  if (await exists(path.join(rootDir, 'README.md'))) files.push(path.join(rootDir, 'README.md'));
   for (const file of files.sort()) {
     const buf = await readFile(file);
     if (buf.includes(0)) continue; // バイナリは対象外とする
@@ -93,10 +94,15 @@ async function main() {
   const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   let denylist = [];
   const listFile = process.env.REFERENCE_DENYLIST;
-  if (listFile && (await exists(listFile))) {
-    denylist = (await readFile(listFile, 'utf8')).split(/\r?\n/);
-  } else {
+  if (!listFile) {
     console.log('匿名化の検査は省略しました');
+  } else if (!(await exists(listFile))) {
+    console.warn(`警告: REFERENCE_DENYLIST のファイル ${listFile} が存在しないため、匿名化の検査は省略しました`);
+  } else {
+    denylist = (await readFile(listFile, 'utf8')).split(/\r?\n/);
+    if (!denylist.some((t) => t.trim())) {
+      console.warn(`警告: REFERENCE_DENYLIST のファイル ${listFile} が空のため、匿名化の検査は省略しました`);
+    }
   }
   const problems = await checkSkills(rootDir, { denylist });
   for (const p of problems) console.error(p);

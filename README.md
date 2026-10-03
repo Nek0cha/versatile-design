@@ -98,7 +98,7 @@ npm run check:recipes  # 部品のレシピのコード例を lint と型検査�
 ```
 
 - `npm test` のスクリーンショットのテストは、ブラウザを起動できない環境ではスキップされる。手元の Chromium を使う場合は `CHROMIUM_PATH=<パス> npm test` とする。
-- `npm run check:skills` で実例名の匿名化を検査するには、禁止語を1行に1つ書いたファイルを環境変数 `REFERENCE_DENYLIST` で渡す（例：`REFERENCE_DENYLIST=<ファイル> npm run check:skills`）。指定がなければ匿名化の検査は省略される。禁止語のファイルはリポジトリに含めない。
+- `npm run check:skills` で実例名の匿名化を検査するには、禁止語を1行に1つ書いたファイルを環境変数 `REFERENCE_DENYLIST` で渡す（例：`REFERENCE_DENYLIST=<ファイル> npm run check:skills`）。対象は `skills/`、`docs/`、`README.md` である。指定がなければ匿名化の検査は省略され、指定したファイルが存在しないか空の場合は警告を出して省略する。禁止語のファイルはリポジトリに含めない。
 - 禁止パターンを増やすときは、`skills/design-core/references/anti-patterns.md` の「スキル作者の調整欄」の手順に従い、機械で判定できるものは `skills/web/scripts/lib/lint-rules.mjs` にルールを足す。
 
 ## 実例の取り扱い方針
