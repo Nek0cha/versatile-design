@@ -64,7 +64,7 @@ export function EmailField({ error, onErrorChange }: { error: string | null; onE
         placeholder="name@example.com"
         className={[
           "h-9 rounded-md border border-line-control bg-surface-1 px-3 font-body text-text",
-          "placeholder:text-text-faint",
+          "placeholder:text-text-muted",
           "transition-colors duration-(--duration-fast) ease-out-quint",
           "data-hovered:border-text-muted",
           "data-focused:outline-2 data-focused:outline-offset-2 data-focused:outline-accent",

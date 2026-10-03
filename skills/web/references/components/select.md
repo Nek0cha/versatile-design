@@ -71,7 +71,7 @@ export function SyncIntervalSelect() {
           "data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent",
         ].join(" ")}
       >
-        <SelectValue className="truncate data-placeholder:text-text-faint" />
+        <SelectValue className="truncate data-placeholder:text-text-muted" />
         <Icon icon="ph:caret-up-down" aria-hidden className="size-4 shrink-0 text-text-muted" />
       </Button>
       <Popover
@@ -129,7 +129,7 @@ export function RegionComboBox() {
         <Input
           placeholder="例：東京"
           className={[
-            "h-9 w-full rounded-md border border-line-control bg-surface-1 px-9 text-text placeholder:text-text-faint",
+            "h-9 w-full rounded-md border border-line-control bg-surface-1 px-9 text-text placeholder:text-text-muted",
             "data-focused:outline-2 data-focused:outline-offset-2 data-focused:outline-accent",
           ].join(" ")}
         />

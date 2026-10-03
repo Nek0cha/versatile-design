@@ -24,8 +24,8 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 | `--color-line` | 区切り線（装飾。3:1 の対象外） | `border-line`、`divide-line` |
 | `--color-line-strong` | 強い区切り線（装飾。3:1 の対象外） | `border-line-strong` |
 | `--color-line-control` | 操作できる部品の枠（3:1 以上）。`--color-text-faint` の別名 | `border-line-control` |
-| `--color-text-faint` | 無効、プレースホルダー | `text-text-faint`、`placeholder:text-text-faint` |
-| `--color-text-muted` | 補足、説明、ラベル | `text-text-muted` |
+| `--color-text-faint` | 無効（4.5:1 に満たないため、プレースホルダーには使わない） | `text-text-faint` |
+| `--color-text-muted` | 補足、説明、ラベル、プレースホルダー | `text-text-muted`、`placeholder:text-text-muted` |
 | `--color-text` | 本文 | `text-text` |
 | `--color-text-strong` | 見出し、主要な値、反転した主要ボタンの面 | `text-text-strong`、`bg-text-strong` |
 | `--color-accent` | 主要な操作、選択中、肯定的な状態（`color.md` の1節の3か所だけ） | `bg-accent`、`ring-accent` |
@@ -175,7 +175,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --color-surface-3: oklch(0.91 0.006 70);
   --color-line: oklch(0.87 0.006 70);
   --color-line-strong: oklch(0.78 0.006 70);
-  --color-text-faint: oklch(0.62 0.006 70);
+  --color-text-faint: oklch(0.60 0.006 70);
   --color-text-muted: oklch(0.48 0.006 70);
   --color-text: oklch(0.28 0.006 70);
   --color-text-strong: oklch(0.18 0.006 70);
@@ -197,7 +197,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
     --color-surface-3: oklch(0.91 0.006 70);
     --color-line: oklch(0.87 0.006 70);
     --color-line-strong: oklch(0.78 0.006 70);
-    --color-text-faint: oklch(0.62 0.006 70);
+    --color-text-faint: oklch(0.60 0.006 70);
     --color-text-muted: oklch(0.48 0.006 70);
     --color-text: oklch(0.28 0.006 70);
     --color-text-strong: oklch(0.18 0.006 70);
