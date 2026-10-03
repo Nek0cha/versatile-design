@@ -3,12 +3,12 @@
 画面に動きを付ける段階で読む。アプリ系とサイト系のどちらでも読み、モードごとの方針は `references/mode-app.md` の「動き」の節と `references/mode-site.md` の「動き」の節に従う。
 
 - トークンの名前（`--ease-out-quint`、`--duration-base` など）は `references/tokens-tailwind.md` が唯一の出典である。このファイルのコード例も、その名前を使う。
-- 優先順位は、プロンプトの指示、`../design-core/user-preferences.md`、下の「スキル作者の調整欄」の順である。
+- 優先順位は、プロンプトの指示、ユーザーの調整欄（`../design-core/SKILL.md` の2節）、下の「スキル作者の調整欄」の順である。
 - 禁止事項は `../design-core/references/anti-patterns.md` の X12〜X15 に従う。
 
 ## スキル作者の調整欄
 
-以下は初期値である。数値はモデルの知識による。スキル作者が実例を見ながら調整する。`user-preferences.md` とプロンプトの指示が優先される。
+以下は初期値である。数値はモデルの知識による。スキル作者が実例を見ながら調整する。ユーザーの調整欄とプロンプトの指示が優先される。
 
 ### 所要時間と遅延
 

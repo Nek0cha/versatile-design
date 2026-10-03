@@ -5,7 +5,7 @@
 トークンを決める段階で読み、実装の段階で `@theme` を書くときにもう一度読む。
 
 - 色の原則と値は `../design-core/references/color.md` に、フォントの選び方と `font-family` の順序は `../design-core/references/typography-ja.md` に従う。角丸、影、余白の段階は `references/mode-app.md` と `references/mode-site.md` の調整欄に従う。動きの所要時間とイージングの使い分けは `references/motion-web.md` に従う。このファイルは、それらの値を Tailwind v4 のトークンとして書く方法を定める。
-- 優先順位は、プロンプトの指示、`../design-core/user-preferences.md`、各資料の「スキル作者の調整欄」の順である。下の定義例の値は調整欄の初期値を書き写したものであり、上位の指示があればそちらに差し替える。名前は差し替えない。
+- 優先順位は、プロンプトの指示、ユーザーの調整欄（`../design-core/SKILL.md` の2節）、各資料の「スキル作者の調整欄」の順である。下の定義例の値は調整欄の初期値を書き写したものであり、上位の指示があればそちらに差し替える。名前は差し替えない。
 
 ## 1. トークン名の一覧
 

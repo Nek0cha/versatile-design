@@ -6,12 +6,10 @@ Claude に「AI 感のない」プロ水準のデザインを出力させるた�
 
 ## スキルの一覧
 
-| スキル | 役割 | 状態 |
-|---|---|---|
-| `design-core` | 媒体に依存しない思想、コンセプト先行の手順、禁止リスト、色と文字の原則、スクリーンショットによる自己批評 | 提供中 |
-| `web` | Web のサイト系とアプリ系の UI。React ＋ Tailwind CSS（v4）＋ React Aria Components。禁止パターンの自動チェックとスクリーンショットの撮影スクリプトを含む | 提供中 |
-| `poster` | ポスターなどの静的なグラフィック | 今後の予定 |
-| `motion` | 動画（モーショングラフィックス） | 今後の予定 |
+| スキル | 役割 |
+|---|---|
+| `design-core` | 媒体に依存しない思想、コンセプト先行の手順、禁止リスト、色と文字の原則、スクリーンショットによる自己批評 |
+| `web` | Web のサイト系とアプリ系の UI。React ＋ Tailwind CSS（v4）＋ React Aria Components。ファビコンの作り方、禁止パターンの自動チェック、スクリーンショットの撮影スクリプトを含む |
 
 - `web` は最初に `design-core` を読む。2つは必ず組で使う。
 - キャッチコピー、見出し、本文は、`web` の `references/copy.md` の書き方に従って、依頼に書かれた事実から書かれる。依頼の情報が足りない場所と、ボタンなどの短い文言は、ダミーと分かる形（「ここに見出し」など）で置かれる。
@@ -19,23 +17,36 @@ Claude に「AI 感のない」プロ水準のデザインを出力させるた�
 
 ## 導入方法
 
-`web` は `../design-core/` という相対パスで `design-core` を読むため、2つのスキルを同じディレクトリに並べて置く。
+Claude Code のプラグインとして導入する方法を勧める。コマンド2つで導入でき、更新もコマンド1つで済む。
 
-### すべてのプロジェクトで使う場合
+### プラグインとして導入する（推奨）
 
-```sh
-mkdir -p ~/.claude/skills
-cp -r skills/design-core skills/web ~/.claude/skills/
+Claude Code のセッションの中で、次の2つを実行する。
+
+```
+/plugin marketplace add Nek0cha/versatile-design
+/plugin install versatile-design@versatile-design
 ```
 
-### 特定のプロジェクトだけで使う場合
+- 導入したスキルは `versatile-design:design-core`、`versatile-design:web` という名前になる。見た目を作る依頼をすれば自動で読まれる。
+- 更新するときは `/plugin marketplace update versatile-design` を実行する。`/plugin` の「Marketplaces」でこの配布元を選び、自動更新を有効にしてもよい。
+- 好みの設定（下の「調整欄の仕組み」）はプラグインの外に置くため、更新しても消えない。
 
-Claude Code のプロジェクトの `.claude/skills/` に置く。
+### スキルのディレクトリに直接置く
+
+プラグインを使わない場合は、2つのスキルをスキルのディレクトリにコピーする。`web` は `../design-core/` という相対パスで `design-core` を読むため、2つを同じディレクトリに並べて置く。
 
 ```sh
+# すべてのプロジェクトで使う場合
+mkdir -p ~/.claude/skills
+cp -r skills/design-core skills/web ~/.claude/skills/
+
+# 特定のプロジェクトだけで使う場合
 mkdir -p <プロジェクト>/.claude/skills
 cp -r skills/design-core skills/web <プロジェクト>/.claude/skills/
 ```
+
+更新するときは、同じコマンドで上書きでコピーする。
 
 ### 必要なもの
 
@@ -56,7 +67,7 @@ npm i -D playwright
 npx playwright install chromium
 ```
 
-プロジェクトに依存を足したくない場合は、`web` スキルのディレクトリに入れてもよい。この場合、スキルを更新するときに `node_modules` を消さないよう注意する（下の「調整欄の仕組み」の更新の方法を参照）。
+プロジェクトに依存を足したくない場合は、スキルのディレクトリに直接置いた `web` の中に入れてもよい。プラグインとして導入した場合は、更新のたびにスキルのディレクトリが入れ替わるため、この方法は使えない。
 
 ```sh
 cd ~/.claude/skills/web   # プロジェクトの .claude/skills/ に置いた場合はそのディレクトリ
@@ -70,23 +81,31 @@ npx playwright install chromium
 
 ## 調整欄の仕組み
 
-好みは2か所の調整欄で上書きできる。
+好みは2種類の調整欄で上書きできる。
 
-- **ユーザーの調整欄**：`skills/design-core/user-preferences.md`。利用者はこのファイルだけに書き込む（好きな色、避けたい色、好きなフォント、避けたいもの、テーマの既定、アニメーションの好みなど）。初期状態は空のひな形であり、空の項目は「好みなし」として扱われる。
+- **ユーザーの調整欄**：利用者が好み（好きな色、避けたい色、好きなフォント、避けたいもの、テーマの既定、アニメーションの好みなど）を書くファイル。スキルの外に置くため、スキルを更新しても消えない。
 - **スキル作者の調整欄**：各 `references/` のファイル内にある「スキル作者の調整欄」の表の初期値。スキル作者が育てていく。
 
 優先順位は次のとおりである。
 
 1. プロンプトでの指示
-2. ユーザーの調整欄（`user-preferences.md`）
+2. ユーザーの調整欄
 3. スキル作者の調整欄
 
-利用者が作者側のファイルを直接編集せずに済むため、スキルを更新して入れ直しても利用者の設定は失われない。更新するときは、ディレクトリごと消さずに、リポジトリの新しいファイルを上書きでコピーする。`user-preferences.md` と、スキルのディレクトリに入れた `node_modules`・`package.json`・`package-lock.json` はそのまま残す。
+### ユーザーの調整欄の置き場所
+
+| 場所 | 効く範囲 |
+|---|---|
+| `~/.claude/versatile-design/preferences.md` | すべてのプロジェクト |
+| `<プロジェクト>/.claude/versatile-design/preferences.md` | そのプロジェクトだけ |
+
+- 両方ある場合は、項目ごとにプロジェクトのほうが優先される。プロジェクトのほうで空にした項目は、すべてのプロジェクト用のほうが使われる。
+- どちらもない場合と、見出しの下が空の項目は「好みなし」として扱われ、スキル作者の初期値が使われる。
+- 書式は `skills/design-core/preferences-template.md` のひな形のとおりである。Claude に「デザインの好みを設定して。アクセントは深い緑にしたい」のように頼めば、ひな形からこのファイルを作って書き込む。自分で作る場合は、ひな形を写して見出しの下に書く。
 
 ```sh
-cp ~/.claude/skills/design-core/user-preferences.md /tmp/user-preferences.md   # 念のため控えを取る
-rsync -a --exclude user-preferences.md skills/design-core/ ~/.claude/skills/design-core/
-rsync -a skills/web/ ~/.claude/skills/web/
+mkdir -p ~/.claude/versatile-design
+cp skills/design-core/preferences-template.md ~/.claude/versatile-design/preferences.md
 ```
 
 ## 開発者向けのコマンド
@@ -96,6 +115,7 @@ npm install            # 開発用の依存を入れる
 npm test               # lint ルール、スクリーンショット、検査ツールのテスト
 npm run check:skills   # SKILL.md の frontmatter、参照先のパス、実例名の匿名化を検査する
 npm run check:recipes  # 部品のレシピのコード例を lint と型検査にかける
+claude plugin validate .   # プラグインと配布元の設定ファイル（.claude-plugin/）を検査する
 ```
 
 - `npm test` のスクリーンショットのテストは、ブラウザを起動できない環境ではスキップされる。手元の Chromium を使う場合は `CHROMIUM_PATH=<パス> npm test` とする。

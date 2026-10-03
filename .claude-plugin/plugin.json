@@ -1,0 +1,11 @@
+{
+  "name": "versatile-design",
+  "description": "Claude に AI 感のないプロ水準のデザインを出力させるスキル集（design-core と web）。",
+  "author": {
+    "name": "Nek0cha"
+  },
+  "homepage": "https://github.com/Nek0cha/versatile-design",
+  "repository": "https://github.com/Nek0cha/versatile-design",
+  "license": "Apache-2.0",
+  "keywords": ["design", "web", "react", "tailwind", "ui"]
+}

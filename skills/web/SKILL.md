@@ -9,12 +9,12 @@ React ＋ Tailwind CSS（v4）＋ React Aria Components で、Web のサイト�
 
 - 下の6つの手順を順に行う。references は最初にすべて読まず、各手順に書かれたファイルだけを、その手順に来たときに読む。
 - パスはこのファイルのあるディレクトリ（以下「スキルのディレクトリ」）を基準にしている。
-- 指示が食い違ったときは、プロンプトの指示 ＞ `../design-core/user-preferences.md` ＞ 各 references の「スキル作者の調整欄」の順に従う。
+- 指示が食い違ったときは、プロンプトの指示 ＞ ユーザーの調整欄 ＞ 各 references の「スキル作者の調整欄」の順に従う。
 
 ## 手順1 読み込み
 
 1. `../design-core/SKILL.md` を読む。
-2. `../design-core/user-preferences.md` を読む。見出しの下が空の項目は「好みなし」として扱う。
+2. ユーザーの調整欄を、`../design-core/SKILL.md` の2節に書かれた場所から探して読む。見つからない場合と、見出しの下が空の項目は「好みなし」として扱う。
 
 ## 手順2 コンセプトを決める
 
@@ -22,7 +22,7 @@ React ＋ Tailwind CSS（v4）＋ React Aria Components で、Web のサイト�
 
 1. 「誰に」「どんな印象を」「何で記憶に残すか」の3行を書く。
 2. 画面ごとにサイト系かアプリ系かを判定する。判定の問いは「その画面は、一度見てもらうことが目的か（サイト系）、繰り返し操作されることが目的か（アプリ系）」である。紹介 LP と管理画面のように両方を含む依頼は、画面ごとに判定し、1つの画面の中で混ぜない。
-3. テーマを決める。プロンプトの指定（「ダークのみ」「ライト基本」「ライトのみ」など）、`user-preferences.md` の「テーマの既定」、既定の「ダーク基本＋ライト対応」の順に採用する。
+3. テーマを決める。プロンプトの指定（「ダークのみ」「ライト基本」「ライトのみ」など）、ユーザーの調整欄の「テーマの既定」、既定の「ダーク基本＋ライト対応」の順に採用する。
 4. `concept-brief.md` の5節の書式で利用者に宣言し、確認を待たずにそのまま進める。依頼が曖昧で3行のどれも決められない場合に限り、質問する。
 
 以降の手順では、判定したモードに応じて次の表のファイルを読む。画面ごとにモードが違う場合は、その画面を作るときにそのモードのファイルを読む。
@@ -77,6 +77,7 @@ observations は、mode のファイルの原則と数値の根拠となる観�
 
 - 動きを付けるときは `references/motion-web.md` を読む。アプリ系は Motion、サイト系は GSAP（必要なら Lenis）を使い、`prefers-reduced-motion` に必ず対応する。
 - 利用者が渡していないキャッチコピー、サブコピー、セクションの見出し、本文は、`references/copy.md` に従って依頼の事実から書く。書けない場所と、ボタンなどの短い文言は、`../design-core/SKILL.md` の5節に従ってダミーと分かる仮の文章にする。
+- ファビコンを必ず一緒に作る。`references/favicon.md` に従い、コンセプトとトークンの色から `favicon.svg` を作って指定し、雛形のファビコンと `<title>` を置き換える。
 - 生成物に作業用のファイル（スクリーンショットなど）を含めない。
 
 ## 手順5 検証する
@@ -91,7 +92,7 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 
 - `<生成物のディレクトリ>` には、`src` など生成したコードのあるディレクトリ（`index.html` があればそれも）を渡す。`node_modules`、`dist`、`build`、`.git`、`.next` は自動で除外される。
 - 終了コード 0 は違反なし、1 は違反あり、2 は引数の誤りである。違反は `ファイル:行番号  ルール名  理由` の形で出る。違反がゼロになるまで直す。
-- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`mono-label`、`rounded-accent-rail`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
+- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`mono-label`、`rounded-accent-rail`、`default-favicon`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
 - 抑制は、条件付き（K）の項目を条件どおりに使う場合など、機能上の理由を1文で言える場合に限る。書き方は下の「抑制コメントの置き場所」に従う。抑制したものはすべて報告に書く。
 
 #### 抑制コメントの置き場所
@@ -104,6 +105,7 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 | `gradient-text`、`mono-label`、`rounded-accent-rail`（CSS） | 宣言のまとまりの `{` がある行。セレクタと `{` が同じ行ならセレクタの行、`{` だけを次の行に書いた場合はその `{` の行 |
 | `gradient-text`、`purple-blue-gradient`、`mono-label`、`rounded-accent-rail`（クラス） | `className=`（または `class=`）がある行 |
 | `purple-blue-gradient`（CSS） | `linear-gradient(` などのグラデーション関数がある行 |
+| `default-favicon` | ファビコンの指定がない場合は `<head>` の行、雛形のファビコンを指す場合はその `<link` の行 |
 | 上記以外 | 該当するクラス名、宣言、`<select`、`type="number"` がある行 |
 
 - コメントの形式は `//`、`/* */`、`<!-- -->` のどれでもよい。JSX の子要素の中では `{/* design-lint-disable-next-line text-arrow -- 理由 */}` のように波括弧で囲む。
@@ -155,6 +157,7 @@ node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業
 
 ## 実施した検証
 - 自動チェック：違反 0 件（対象：<ディレクトリ>）。抑制コメント：なし／<ファイル:行 ルール名 理由>
+- ファビコン：作ったファイル（例：favicon.svg、apple-touch-icon.png）。作らなかったものがあれば、その理由
 - スクリーンショット：1440px・390px × dark・light（撮れなかった場合は「撮れなかった」と書き、エラーメッセージと代わりに行った確認を書く）
 - 自己批評：<1 または 2> 周。直した項目：<C 番号と内容>
 - 条件付き（K）・要注意（W）の項目を使った場合：<番号と理由>
