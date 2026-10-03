@@ -76,7 +76,7 @@ observations は、mode のファイルの原則と数値の根拠となる観�
 | アイコン | `references/components/icons.md` |
 
 - 動きを付けるときは `references/motion-web.md` を読む。アプリ系は Motion、サイト系は GSAP（必要なら Lenis）を使い、`prefers-reduced-motion` に必ず対応する。
-- 利用者が渡していない文章は、`../design-core/SKILL.md` の5節に従ってダミーと分かる仮の文章にする。
+- 利用者が渡していないキャッチコピー、サブコピー、セクションの見出し、本文は、`references/copy.md` に従って依頼の事実から書く。書けない場所と、ボタンなどの短い文言は、`../design-core/SKILL.md` の5節に従ってダミーと分かる仮の文章にする。
 - 生成物に作業用のファイル（スクリーンショットなど）を含めない。
 
 ## 手順5 検証する
