@@ -56,3 +56,24 @@ test('clean input exits 0', () => {
     rmSync(dir, { recursive: true, force: true });
   }
 });
+test('a violation before the directive on the same line is still reported', () => {
+  const src = 'foo /* design-lint-disable-next-line no-foo -- 次の行は意図的 */\nfoo\n';
+  assert.deepEqual(lintSource(src, 'x.css', [noFoo]).map((v) => v.line), [1]);
+});
+test('hits inside the directive comment itself are ignored', () => {
+  const src = '/* design-lint-disable-next-line no-foo -- foo を残す */\nfoo\n';
+  assert.equal(lintSource(src, 'x.css', [noFoo]).length, 0);
+});
+test('html comments can suppress', () => {
+  const src = '<!-- design-lint-disable-next-line no-foo -- 意図的 -->\nfoo\nfoo\n';
+  const noFooHtml = { ...noFoo, extensions: ['.html'] };
+  assert.deepEqual(lintSource(src, 'x.html', [noFooHtml]).map((v) => v.line), [3]);
+});
+test('html comment without reason is a violation', () => {
+  const src = '<!-- design-lint-disable-next-line no-foo -- -->\nfoo\n';
+  const noFooHtml = { ...noFoo, extensions: ['.html'] };
+  assert.deepEqual(
+    lintSource(src, 'x.html', [noFooHtml]).map((x) => x.rule).sort(),
+    ['no-foo', 'suppression-without-reason'],
+  );
+});

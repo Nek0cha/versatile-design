@@ -6,8 +6,10 @@ import { rules as defaultRules, projectRules as defaultProjectRules } from './li
 export const SCAN_EXTENSIONS = ['.tsx', '.jsx', '.ts', '.js', '.css', '.html'];
 export const EXCLUDED_DIRS = ['node_modules', 'dist', 'build', '.git', '.next'];
 
-// `//` と `/* */` の両形式の抑制コメントを受け付ける
-const SUPPRESSION = /(?:\/\/|\/\*)\s*design-lint-disable-next-line[ \t]+([\w-]+)([^\n]*)/g;
+// `//`・`/* */`・`<!-- -->` の3形式の抑制コメントを受け付ける
+const SUPPRESSION = /(\/\/|\/\*|<!--)\s*design-lint-disable-next-line[ \t]+([\w-]+)([^\n]*)/g;
+// コメント形式ごとの終端記号。`//` は行末で終わる
+const COMMENT_END = { '/*': '*/', '<!--': '-->' };
 
 function lineOf(source, index) {
   let line = 1;
@@ -20,40 +22,45 @@ function lineOf(source, index) {
 // 抑制コメントを解析する。理由（`--` の後の空白以外の文字列）がなければ違反として返す。
 function parseSuppressions(source, filePath) {
   const suppressed = new Map(); // 行番号 -> 抑制するルール id の集合
-  const directiveLines = new Set(); // 抑制コメント自身の行
+  const directiveSpans = []; // 抑制コメント自身が占める範囲 [開始, 終了)
   const violations = [];
   for (const m of source.matchAll(SUPPRESSION)) {
+    const [, opener, ruleId, tail] = m;
     const line = lineOf(source, m.index);
-    const rest = m[2].replace(/\*\/.*$/, '');
+    const lineEnd = m.index + m[0].length;
+    const closer = COMMENT_END[opener];
+    const closeAt = closer ? source.indexOf(closer, m.index + opener.length) : -1;
+    const end = closeAt === -1 || closeAt > lineEnd ? lineEnd : closeAt + closer.length;
+    directiveSpans.push([m.index, end]);
+    const rest = tail.replace(/(?:\*\/|-->)[\s\S]*$/, '');
     const reason = /^\s*--\s*(\S[\s\S]*)$/.exec(rest);
     if (!reason) {
       violations.push({
         file: filePath,
         line,
         rule: 'suppression-without-reason',
-        message: `抑制コメントに理由がない。「design-lint-disable-next-line ${m[1]} -- 理由」の形式で書くこと`,
+        message: `抑制コメントに理由がない。「design-lint-disable-next-line ${ruleId} -- 理由」の形式で書くこと`,
       });
+      // 理由のない抑制は無効とし、元の違反も報告する
+      continue;
     }
-    directiveLines.add(line);
-    // 理由のない抑制は無効とし、元の違反も報告する
-    if (!reason) continue;
     const target = line + 1;
     if (!suppressed.has(target)) suppressed.set(target, new Set());
-    suppressed.get(target).add(m[1]);
+    suppressed.get(target).add(ruleId);
   }
-  return { suppressed, violations, directiveLines };
+  return { suppressed, violations, directiveSpans };
 }
 
 export function lintSource(source, filePath, rules) {
   const ext = extname(filePath);
-  const { suppressed, violations, directiveLines } = parseSuppressions(source, filePath);
+  const { suppressed, violations, directiveSpans } = parseSuppressions(source, filePath);
   const result = [...violations];
   for (const rule of rules) {
     if (!rule.extensions.includes(ext)) continue;
     for (const hit of rule.check(source, filePath)) {
+      // 抑制コメント自身の中（ルール id や理由の文字列）での検出は外す。同じ行でもコメントの外の違反は残す
+      if (directiveSpans.some(([start, end]) => hit.index >= start && hit.index < end)) continue;
       const line = lineOf(source, hit.index);
-      // 抑制コメント自身の行（ルール id を含む）は検査対象から外す
-      if (directiveLines.has(line)) continue;
       if (suppressed.get(line)?.has(rule.id)) continue;
       result.push({ file: filePath, line, rule: rule.id, message: hit.message });
     }
