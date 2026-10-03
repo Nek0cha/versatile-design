@@ -451,6 +451,47 @@ const roundedAccentRail = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// ファビコン
+
+const TEMPLATE_FAVICON = /(?:^|\/)(?:vite|react)\.svg$/i;
+
+// HTML のコメントを、位置を保ったまま空白に置き換える
+function blankComments(source) {
+  return source.replace(/<!--[\s\S]*?-->/g, (m) => m.replace(/[^\n]/g, ' '));
+}
+
+const defaultFavicon = {
+  id: 'default-favicon',
+  extensions: ['.html'],
+  check(source) {
+    const text = blankComments(source);
+    const head = /<head(?=[\s>])/i.exec(text);
+    if (!head) return [];
+    const out = [];
+    let hasIcon = false;
+    for (const m of text.matchAll(/<link\b[^>]*>/gi)) {
+      const rel = /\brel\s*=\s*["']([^"']*)["']/i.exec(m[0]);
+      if (!rel || !rel[1].toLowerCase().split(/\s+/).includes('icon')) continue;
+      hasIcon = true;
+      const href = /\bhref\s*=\s*["']([^"']*)["']/i.exec(m[0]);
+      if (href && TEMPLATE_FAVICON.test(href[1].replace(/[?#].*$/, ''))) {
+        out.push({
+          index: m.index,
+          message: '雛形のファビコンが残っている。コンセプトとトークンの色から favicon.svg を作り、差し替える（references/favicon.md）',
+        });
+      }
+    }
+    if (!hasIcon) {
+      out.push({
+        index: head.index,
+        message: 'ファビコンの指定（<link rel="icon">）がない。favicon.svg を作り、<head> で指定する（references/favicon.md）',
+      });
+    }
+    return out;
+  },
+};
+
 export const rules = [
   textArrow,
   emojiIcon,
@@ -464,6 +505,7 @@ export const rules = [
   defaultEasing,
   monoLabel,
   roundedAccentRail,
+  defaultFavicon,
 ];
 
 // ---------------------------------------------------------------------------

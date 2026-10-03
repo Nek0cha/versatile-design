@@ -1,0 +1,14 @@
+{
+  "name": "versatile-design",
+  "description": "AI 感のないデザインを作るためのスキル集の配布元",
+  "owner": {
+    "name": "Nek0cha"
+  },
+  "plugins": [
+    {
+      "name": "versatile-design",
+      "source": "./",
+      "description": "Claude に AI 感のないプロ水準のデザインを出力させるスキル集（design-core と web）。"
+    }
+  ]
+}

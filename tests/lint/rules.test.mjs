@@ -19,6 +19,7 @@ test('exports the expected rule ids', () => {
   const ids = rules.map((r) => r.id).sort();
   assert.deepEqual(ids, [
     'default-easing',
+    'default-favicon',
     'emoji-icon',
     'generic-font-only',
     'gradient-text',
@@ -190,6 +191,34 @@ test('default-easing accepts custom easing', () => {
   assert.equal(hits('.a { transition: transform 0.3s cubic-bezier(0.2, 0, 0, 1); }', 'x.css', 'default-easing').length, 0);
   assert.equal(hits('.a { transition: none; }', 'x.css', 'default-easing').length, 0);
   assert.equal(hits('.a { animation: fade 1s linear(0, 0.5, 1); }', 'x.css', 'default-easing').length, 0);
+});
+
+// default-favicon
+test('default-favicon flags a head without an icon link', () => {
+  const v = hits('<!doctype html>\n<html>\n<head>\n<title>x</title>\n</head>\n</html>', 'index.html', 'default-favicon');
+  assert.equal(v.length, 1);
+  assert.equal(v[0].line, 3);
+  assert.equal(hits('<div>no head here</div>', 'part.html', 'default-favicon').length, 0);
+  assert.equal(hits('<header>x</header>', 'part.html', 'default-favicon').length, 0);
+});
+test('default-favicon flags template favicons', () => {
+  const vite = '<head>\n<link rel="icon" type="image/svg+xml" href="/vite.svg" />\n</head>';
+  const v = hits(vite, 'index.html', 'default-favicon');
+  assert.equal(v.length, 1);
+  assert.equal(v[0].line, 2);
+  assert.equal(hits("<head><link href='/react.svg' rel='shortcut icon'></head>", 'index.html', 'default-favicon').length, 1);
+});
+test('default-favicon accepts a custom favicon', () => {
+  assert.equal(
+    hits('<head>\n<link rel="icon" href="/favicon.svg" type="image/svg+xml" />\n</head>', 'index.html', 'default-favicon').length,
+    0,
+  );
+  // apple-touch-icon だけではタブのファビコンにならない
+  assert.equal(hits('<head><link rel="apple-touch-icon" href="/a.png"></head>', 'index.html', 'default-favicon').length, 1);
+  // コメントの中の指定は数えない
+  assert.equal(hits('<head><!-- <link rel="icon" href="/favicon.svg"> --></head>', 'index.html', 'default-favicon').length, 1);
+  // tsx は対象外（Next.js などは別の仕組みでファビコンを指定する）
+  assert.equal(hits('<head></head>', 'x.tsx', 'default-favicon').length, 0);
 });
 
 // no-reduced-motion
