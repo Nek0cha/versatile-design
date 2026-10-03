@@ -2,6 +2,13 @@
   "name": "versatile-design",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=22" },
-  "scripts": { "test": "node --test \"tests/**/*.test.mjs\"" }
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "test": "node --test \"tests/**/*.test.mjs\""
+  },
+  "devDependencies": {
+    "playwright": "1.56.1"
+  }
 }
