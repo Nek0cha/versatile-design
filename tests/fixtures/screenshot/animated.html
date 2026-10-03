@@ -1,0 +1,35 @@
+<!doctype html>
+<html lang="ja">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>動きのある撮影用フィクスチャ</title>
+<style>
+  body { margin: 0; background: #000; }
+  .box { width: 200px; height: 200px; background: #f00; }
+  /* 読み込み直後から 900ms かけて現れる */
+  #fade { animation: fade-in 900ms cubic-bezier(0.2, 0, 0, 1) both; }
+  @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
+  /* ページの下の方にあり、画面に入ったときに現れる */
+  #spacer { height: 3000px; }
+  #reveal { background: #0f0; opacity: 0; transition: opacity 600ms cubic-bezier(0.2, 0, 0, 1); }
+  #reveal.is-visible { opacity: 1; }
+</style>
+</head>
+<body>
+<div id="fade" class="box"></div>
+<div id="spacer"></div>
+<div id="reveal" class="box"></div>
+<script>
+  const target = document.getElementById('reveal');
+  new IntersectionObserver((entries, observer) => {
+    for (const entry of entries) {
+      if (entry.isIntersecting) {
+        entry.target.classList.add('is-visible');
+        observer.disconnect();
+      }
+    }
+  }).observe(target);
+</script>
+</body>
+</html>

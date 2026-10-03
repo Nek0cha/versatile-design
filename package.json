@@ -1,0 +1,24 @@
+{
+  "name": "versatile-design",
+  "private": true,
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "check:skills": "node tools/check-skills.mjs",
+    "test": "node --test \"tests/**/*.test.mjs\"",
+    "check:recipes": "node tools/check-recipes.mjs"
+  },
+  "devDependencies": {
+    "@iconify/react": "6.0.2",
+    "@types/react": "19.3.0",
+    "@types/react-dom": "19.3.0",
+    "motion": "14.0.0",
+    "playwright": "1.56.1",
+    "react": "19.3.0",
+    "react-aria-components": "1.21.1",
+    "react-dom": "19.3.0",
+    "typescript": "7.0.2"
+  }
+}
