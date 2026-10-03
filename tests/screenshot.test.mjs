@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { spawnSync } from 'node:child_process';
-import { mkdtempSync, readFileSync, rmSync } from 'node:fs';
+import { copyFileSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -65,4 +65,23 @@ test('reports a clear error when the browser cannot launch', () => {
   });
   assert.equal(r.status, 1);
   assert.match(r.stderr.toString(), /ブラウザを起動できませんでした/);
+});
+
+test('falls back to playwright in the current project when the script lives elsewhere', { skip }, () => {
+  const dir = mkdtempSync(path.join(tmpdir(), 'shot-copy-'));
+  try {
+    const copy = path.join(dir, 'screenshot.mjs');
+    copyFileSync(cli, copy);
+    const out = path.join(dir, 'out');
+    const r = spawnSync('node', [copy, fixturePage, '--out', out, '--widths', '390', '--themes', 'dark'], {
+      cwd: root,
+      // 全体に導入された playwright ではなく、カレントディレクトリのものが使われることを確かめる
+      env: { ...process.env, NODE_PATH: '' },
+      encoding: 'utf8',
+    });
+    assert.equal(r.status, 0, r.stderr);
+    assert.equal(pngWidth(path.join(out, '390-dark.png')), 390);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

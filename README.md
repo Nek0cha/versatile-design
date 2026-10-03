@@ -47,9 +47,7 @@ cp -r skills/design-core skills/web <プロジェクト>/.claude/skills/
 
 `web` の検証の手順では、`scripts/screenshot.mjs` が Playwright で PC 幅（1440px）とスマートフォン幅（390px）、ダークとライトのスクリーンショットを撮る。Playwright が導入されていない環境では撮影を省略し、その旨が報告に書かれる（自動チェックとコードの読み直しで代わりに検証する）。
 
-`screenshot.mjs` は、スクリプト自身の置き場所から上のディレクトリにある `node_modules` から `playwright` を探す。置き場所に合わせて導入する。
-
-プロジェクトの `.claude/skills/` に置いた場合は、プロジェクトに入れる。
+`screenshot.mjs` は、まずスクリプト自身の置き場所から上のディレクトリにある `node_modules` から `playwright` を探し、見つからなければコマンドを実行したディレクトリ（作業中のプロジェクト）から探す。スキルをどこに置いた場合でも、作業するプロジェクトに入れる方法を勧める。
 
 ```sh
 cd <プロジェクト>
@@ -57,10 +55,10 @@ npm i -D playwright
 npx playwright install chromium
 ```
 
-`~/.claude/skills/` に置いた場合は、`web` スキルのディレクトリに入れる。
+プロジェクトに依存を足したくない場合は、`web` スキルのディレクトリに入れてもよい。この場合、スキルを更新するときに `node_modules` を消さないよう注意する（下の「調整欄の仕組み」の更新の方法を参照）。
 
 ```sh
-cd ~/.claude/skills/web
+cd ~/.claude/skills/web   # プロジェクトの .claude/skills/ に置いた場合はそのディレクトリ
 npm i playwright
 npx playwright install chromium
 ```
@@ -82,7 +80,13 @@ npx playwright install chromium
 2. ユーザーの調整欄（`user-preferences.md`）
 3. スキル作者の調整欄
 
-利用者が作者側のファイルを直接編集せずに済むため、スキルを更新して入れ直しても利用者の設定は失われない。更新するときは、`user-preferences.md` を残して他のファイルを差し替える。
+利用者が作者側のファイルを直接編集せずに済むため、スキルを更新して入れ直しても利用者の設定は失われない。更新するときは、ディレクトリごと消さずに、リポジトリの新しいファイルを上書きでコピーする。`user-preferences.md` と、スキルのディレクトリに入れた `node_modules`・`package.json`・`package-lock.json` はそのまま残す。
+
+```sh
+cp ~/.claude/skills/design-core/user-preferences.md /tmp/user-preferences.md   # 念のため控えを取る
+rsync -a --exclude user-preferences.md skills/design-core/ ~/.claude/skills/design-core/
+rsync -a skills/web/ ~/.claude/skills/web/
+```
 
 ## 開発者向けのコマンド
 

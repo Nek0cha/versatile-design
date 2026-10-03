@@ -2,6 +2,7 @@
 // 使い方: node screenshot.mjs <target> --out <dir> [--widths 1440,390] [--themes dark,light]
 // target は URL またはローカルファイルのパスである。
 import { mkdir } from 'node:fs/promises';
+import { createRequire } from 'node:module';
 import path from 'node:path';
 import { pathToFileURL, fileURLToPath } from 'node:url';
 
@@ -16,12 +17,24 @@ function toUrl(target) {
   return pathToFileURL(path.resolve(target)).href;
 }
 
+// スクリプトの置き場所から探し、見つからなければコマンドを実行したプロジェクト（カレントディレクトリ）から探す
 async function loadChromium() {
   try {
     return (await import('playwright')).chromium;
   } catch {
-    throw new UserError('playwright を読み込めなかった。`npm i -D playwright` で導入すること。');
+    // スキルの置き場所に playwright がない場合は、次に進む
   }
+  try {
+    const mod = createRequire(path.join(process.cwd(), 'noop.js'))('playwright');
+    const chromium = mod.chromium ?? mod.default?.chromium;
+    if (chromium) return chromium;
+  } catch {
+    // どちらにもない場合は、下で導入方法を示す
+  }
+  throw new UserError(
+    'playwright を読み込めなかった。コマンドを実行するプロジェクトで `npm i -D playwright`、' +
+      'またはこのスキルのディレクトリで `npm i playwright` を実行して導入すること。',
+  );
 }
 
 export async function captureScreenshots({ target, outDir, widths = DEFAULT_WIDTHS, themes = DEFAULT_THEMES }) {

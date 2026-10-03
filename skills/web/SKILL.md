@@ -29,11 +29,10 @@ React ＋ Tailwind CSS（v4）＋ React Aria Components で、Web のサイト�
 
 | | サイト系 | アプリ系 |
 |---|---|---|
-| 手順3で読む | `references/mode-site.md` | `references/mode-app.md` |
+| 手順3で読む | `references/mode-site.md` と `references/observations/site.md` | `references/mode-app.md` と `references/observations/app.md` |
 | 手順4で読む | フォーム、メニュー、ダイアログを作るときだけ `references/intuitive-ui.md` の2節、4節、7節 | `references/intuitive-ui.md` |
-| 根拠を確かめたいときだけ読む | `references/observations/site.md` | `references/observations/app.md` |
 
-observations は観察の記録であり、手本ではない。特定の実例の見た目を再現するために使わない。
+observations は、mode のファイルの原則と数値の根拠となる観察の記録である。原則がなぜそうなっているかを理解するために mode のファイルと組で読み、判断は mode のファイルに従う。手本ではないため、特定の実例の見た目や数値の組み合わせを再現しない。
 
 ## 手順3 トークンを決める
 
@@ -44,7 +43,7 @@ observations は観察の記録であり、手本ではない。特定の実例�
 - `../design-core/references/anti-patterns.md`（通読し、これから決める値が禁止事項に当たらないことを確かめる）
 - `../design-core/references/color.md`
 - `../design-core/references/typography-ja.md`
-- 手順2で判定したモードのファイル（`references/mode-site.md` または `references/mode-app.md`）
+- 手順2で判定したモードのファイルと、その根拠の観察記録（上の表）
 - `references/tokens-tailwind.md`（トークン名の唯一の出典。2節の定義例を写して値だけを調整する）
 
 決まりごと：
@@ -113,7 +112,7 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 
 ### 5.2 スクリーンショット
 
-開発サーバーなどで画面を表示できる状態にしてから撮る。
+開発サーバーなどで画面を表示できる状態にしてから、生成物のプロジェクトのルートで実行する。`playwright` は、スキルのディレクトリに見つからなければ、実行したディレクトリのプロジェクトから読み込まれる。
 
 ```sh
 node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業用ディレクトリ>
@@ -127,9 +126,10 @@ node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業
 
 **撮れなかった場合**（`playwright を読み込めなかった`、`ブラウザを起動できませんでした` などで終了コード 1 になった場合、または画面を表示するサーバーを起動できない場合）：
 
-- 撮れたことにしない。撮れなかった理由（エラーメッセージ）を報告にそのまま書く。
-- 利用者の許可なく `playwright` やブラウザを導入しない。導入方法はリポジトリの README にあると報告で伝える。
-- 代わりに、自動チェックとコードの読み直しで検証する。5.3 の自己批評は、各項目をコード（クラス、トークンの値、レイアウトの指定）から確認し、画像を見ていない項目であることを報告に書く。
+1. 「ブラウザを起動できませんでした」の場合、手元に Chromium の実行ファイルがあれば、環境変数で場所を指定して一度だけ撮り直す：`CHROMIUM_PATH=<実行ファイルのパス> node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業用ディレクトリ>`。撮れたら通常どおり進める。
+2. それでも撮れなければ、撮れたことにしない。撮れなかった理由（エラーメッセージ）を報告にそのまま書く。
+3. 利用者の許可なく `playwright` やブラウザを導入しない。導入方法はリポジトリの README にあると報告で伝える。
+4. 代わりに、自動チェックとコードの読み直しで検証する。5.3 の自己批評は、各項目をコード（クラス、トークンの値、レイアウトの指定）から確認し、画像を見ていない項目であることを報告に書く。
 
 ### 5.3 自己批評（最大2周）
 
