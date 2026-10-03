@@ -47,3 +47,10 @@ test('warns but passes when the denylist file is empty', async () => {
   assert.equal(r.status, 0, r.stderr);
   assert.match(r.stderr, /警告.*空/);
 });
+
+test('detects a missing sibling skill reference', async () => {
+  const d = await mkdtemp(`${tmpdir()}/cs-`);
+  await mkdir(`${d}/skills/a`, { recursive: true });
+  await writeFile(`${d}/skills/a/SKILL.md`, '---\nname: a\ndescription: 説明\n---\n\n`../copywriting/SKILL.md` を読む。\n');
+  assert.match((await checkSkills(d)).join('\n'), /\.\.\/copywriting\/SKILL\.md/);
+});

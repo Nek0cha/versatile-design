@@ -36,7 +36,7 @@ function parseFrontmatter(text) {
   return fields;
 }
 
-const REF_RE = /`((?:references\/|scripts\/|\.\.\/design-core\/)[^`\s]*)`/g;
+const REF_RE = /`((?:references\/|scripts\/|\.\.\/[\w-]+\/)[^`\s]*)`/g;
 
 async function checkFrontmatter(skillDir, name, rel, problems) {
   const text = await readFile(path.join(skillDir, 'SKILL.md'), 'utf8').catch(() => null);
