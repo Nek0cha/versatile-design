@@ -22,9 +22,11 @@ test('exports the expected rule ids', () => {
     'emoji-icon',
     'generic-font-only',
     'gradient-text',
+    'mono-label',
     'native-number-input',
     'native-select',
     'purple-blue-gradient',
+    'rounded-accent-rail',
     'tailwind-default-palette',
     'text-arrow',
     'transition-all',
@@ -276,4 +278,54 @@ test('purple-blue-gradient understands oklch colours', () => {
   assert.equal(hits(grays, 'x.css', 'purple-blue-gradient').length, 0);
   const hexAndOklch = '.a { background: linear-gradient(#6366f1, oklch(0.7 0.18 50)); }';
   assert.equal(hits(hexAndOklch, 'x.css', 'purple-blue-gradient').length, 0);
+});
+
+// mono-label
+test('mono-label flags monospace labels set in uppercase or with wide tracking', () => {
+  assert.equal(hits('<p className="font-mono text-xs uppercase tracking-widest">本日の献立</p>', 'x.tsx', 'mono-label').length, 1);
+  assert.equal(hits('<span class="font-mono uppercase">見出し</span>', 'x.html', 'mono-label').length, 1);
+  assert.equal(hits('<h2 className="font-mono text-xs tracking-[0.2em]">見出し</h2>', 'x.jsx', 'mono-label').length, 1);
+  assert.equal(hits('<h2 className={cn("font-mono", "md:uppercase")}>見出し</h2>', 'x.tsx', 'mono-label').length, 1);
+  const css = '.eyebrow {\n  font-family: var(--font-mono);\n  text-transform: uppercase;\n}';
+  assert.equal(hits(css, 'x.css', 'mono-label').length, 1);
+  const css2 = '.eyebrow { font-family: "DM Mono", monospace; letter-spacing: 0.1em; text-transform: uppercase; }';
+  assert.equal(hits(css2, 'x.css', 'mono-label').length, 1);
+  assert.match(hits(css, 'x.css', 'mono-label')[0].message, /。/);
+});
+test('mono-label leaves numbers, code and non-mono labels alone', () => {
+  assert.equal(hits('<span className="font-mono tabular-nums text-text-muted">{count}</span>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('<code className="font-mono text-sm">npm test</code>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('<span className="font-mono tracking-tight tabular-nums">00:01:12</span>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('<p className="font-body text-xs uppercase tracking-widest">ラベル</p>', 'x.tsx', 'mono-label').length, 0);
+  assert.equal(hits('.label { font-family: var(--font-body); text-transform: uppercase; }', 'x.css', 'mono-label').length, 0);
+  assert.equal(hits('.num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }', 'x.css', 'mono-label').length, 0);
+});
+
+// rounded-accent-rail
+test('rounded-accent-rail flags a side border on a card rounded on that side', () => {
+  assert.equal(hits('<div className="rounded-lg border-l-4 border-accent bg-surface-1" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div class="rounded border-l" />', 'x.html', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div className="rounded-md border-s-2" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div className="rounded-island border-r-4" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div className="rounded-l-md border-l-[3px]" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  assert.equal(hits('<div className="rounded-t-md border-e-2" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+  const css = '.note {\n  border-left: 4px solid var(--color-accent);\n  border-radius: 8px;\n}';
+  assert.equal(hits(css, 'x.css', 'rounded-accent-rail').length, 1);
+  const css2 = '.note { border-inline-start: 0.25rem solid var(--color-accent); border-radius: var(--radius-md); }';
+  assert.equal(hits(css2, 'x.css', 'rounded-accent-rail').length, 1);
+  assert.match(hits(css, 'x.css', 'rounded-accent-rail')[0].message, /。/);
+});
+test('rounded-accent-rail accepts straight rails and plain rounded borders', () => {
+  assert.equal(hits('<div className="rounded-lg border border-line" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="border-l-4 rounded-none border-accent" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-r-md border-l-4 border-accent" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-e-md border-s-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-l-md border-r-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<nav className="w-60 border-r border-line bg-surface-1" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md border-l-accent border" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('<div className="rounded-md border-l-0" />', 'x.tsx', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('.a { border-left: 1px solid var(--color-line); border-radius: 8px; }', 'x.css', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('.a { border-left: 4px solid red; border-radius: 0; }', 'x.css', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('.a { border-left: 4px solid red; border-radius: 0 8px 8px 0; }', 'x.css', 'rounded-accent-rail').length, 0);
+  assert.equal(hits('.a { border-left: 4px solid red; }', 'x.css', 'rounded-accent-rail').length, 0);
 });

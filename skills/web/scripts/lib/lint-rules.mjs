@@ -334,6 +334,102 @@ const defaultEasing = {
   },
 };
 
+// 等幅フォント＋大文字（または広い字間）の小さなラベル
+const MONO_CLASS = /(?<![\w-])font-mono(?![\w-])/;
+const UPPERCASE_CLASS = /(?<![\w-])uppercase(?![\w-])/;
+// 字間を広げるクラス。tracking-tight などの詰める指定と負の値は対象外
+const WIDE_TRACKING_CLASS = /(?<![\w-])tracking-(?:wide|wider|widest|\[\+?(?:\d*\.)?\d+(?:em|rem|px)\])(?![\w-])/;
+const MONO_FAMILY = /font-family\s*:[^;]*(?:monospace|var\(\s*--font-mono\s*\)|var\(\s*--default-mono-font-family\s*\))/;
+
+const monoLabel = {
+  id: 'mono-label',
+  extensions: ALL,
+  check(source) {
+    const message =
+      '等幅フォントを大文字や広い字間と組み合わせたラベルや見出しは、AI が作った画面の定番の見た目である。ラベルや見出しは本文か見出しの書体で組み、字間で整える。等幅フォントは桁を揃える数字、コード、ID だけに使う';
+    const out = [];
+    for (const { index, value } of classAttributes(source)) {
+      if (MONO_CLASS.test(value) && (UPPERCASE_CLASS.test(value) || WIDE_TRACKING_CLASS.test(value))) {
+        out.push({ index, message });
+      }
+    }
+    for (const { index, body } of cssBlocks(source)) {
+      if (MONO_FAMILY.test(body) && /text-transform\s*:\s*uppercase\b/.test(body)) out.push({ index, message });
+    }
+    return out;
+  },
+};
+
+// 角丸のカードの片側だけに付けた太い線（線の両端が角丸に沿って曲がる）
+// 線の側：l と s は左、r と e は右として扱う（書字方向が左から右の前提）
+const SIDE_BORDER_CLASS = /(?<![\w-])border-([lrse])(?:-(\d+|\[[^\]\s]+\]))?(?![\w-])/g;
+// rounded / rounded-<段階> / rounded-<角か辺>-<段階>。-none は角丸なしとして扱う
+const ROUNDED_CLASS = /(?<![\w-])rounded(?:-(t|r|b|l|s|e|tl|tr|br|bl|ss|se|es|ee|ts|te|bs|be))?(?:-([\w-]+|\[[^\]\s]+\]))?(?![\w-])/g;
+// 角か辺の指定が、左右どちらの辺の角を丸めるか
+const ROUND_LEFT = new Set([undefined, 't', 'b', 'l', 's', 'tl', 'bl', 'ss', 'es', 'ts', 'bs']);
+const ROUND_RIGHT = new Set([undefined, 't', 'b', 'r', 'e', 'tr', 'br', 'se', 'ee', 'te', 'be']);
+const RAIL_MESSAGE =
+  '角丸のカードに片側だけ太い線を付けると、線の両端が角丸に沿って曲がり、AI が作る UI の定番の見た目になる。帯が本当に必要なら、その側の角丸をなくすか、角丸の内側に収めた直線の帯（絶対配置の要素か疑似要素）にして、上から下まで真っすぐ通す';
+
+// CSS の長さを px に直す。判定できない値（var() など）は null
+function lengthPx(value) {
+  const v = value.trim();
+  if (/^thin\b/.test(v)) return 1;
+  if (/^medium\b/.test(v)) return 3;
+  if (/^thick\b/.test(v)) return 5;
+  const m = v.match(/^(\d*\.?\d+)(px|rem|em)?\b/);
+  if (!m) return null;
+  const n = parseFloat(m[1]);
+  return m[2] === 'rem' || m[2] === 'em' ? n * 16 : n;
+}
+
+// border-radius の値から、左右の辺の角が丸いかを返す（左上・右上・右下・左下の順で展開）
+function radiusSides(value) {
+  const parts = value.split('/')[0].trim().split(/\s+(?![^(]*\))/).filter(Boolean);
+  const nonZero = parts.map((p) => !/^0(?:px|rem|em|%)?$/.test(p));
+  if (nonZero.length === 0) return { left: false, right: false };
+  const [a, b = a, c = a, d = b] = nonZero;
+  return { left: a || d, right: b || c };
+}
+
+const roundedAccentRail = {
+  id: 'rounded-accent-rail',
+  extensions: ALL,
+  check(source) {
+    const out = [];
+    for (const { index, value } of classAttributes(source)) {
+      const sides = new Set();
+      for (const m of value.matchAll(SIDE_BORDER_CLASS)) {
+        if (m[2] === '0' || m[2] === '[0]' || m[2] === '[0px]') continue;
+        sides.add(m[1] === 'l' || m[1] === 's' ? 'left' : 'right');
+      }
+      if (sides.size === 0) continue;
+      let left = false;
+      let right = false;
+      for (const m of value.matchAll(ROUNDED_CLASS)) {
+        if (m[2] === 'none' || m[2] === '[0]' || m[2] === '[0px]') continue;
+        if (ROUND_LEFT.has(m[1])) left = true;
+        if (ROUND_RIGHT.has(m[1])) right = true;
+      }
+      if ((sides.has('left') && left) || (sides.has('right') && right)) out.push({ index, message: RAIL_MESSAGE });
+    }
+    for (const { index, body } of cssBlocks(source)) {
+      const radius = /(?<![\w-])border-radius\s*:\s*([^;]+)/.exec(body);
+      if (!radius) continue;
+      const round = radiusSides(radius[1]);
+      let hit = false;
+      for (const m of body.matchAll(/(?<![\w-])border-(left|right|inline-start|inline-end)(?:-width)?\s*:\s*([^;]+)/g)) {
+        const px = lengthPx(m[2]);
+        if (px === null || px <= 1) continue;
+        const side = m[1] === 'left' || m[1] === 'inline-start' ? 'left' : 'right';
+        if (round[side]) hit = true;
+      }
+      if (hit) out.push({ index, message: RAIL_MESSAGE });
+    }
+    return out;
+  },
+};
+
 export const rules = [
   textArrow,
   emojiIcon,
@@ -345,6 +441,8 @@ export const rules = [
   nativeNumberInput,
   transitionAll,
   defaultEasing,
+  monoLabel,
+  roundedAccentRail,
 ];
 
 // ---------------------------------------------------------------------------
