@@ -40,7 +40,7 @@ const REF_RE = /`((?:references\/|scripts\/|\.\.\/design-core\/)[^`\s]*)`/g;
 
 async function checkFrontmatter(skillDir, name, rel, problems) {
   const text = await readFile(path.join(skillDir, 'SKILL.md'), 'utf8').catch(() => null);
-  if (text === null) return; // SKILL.md が未作成のディレクトリは検査対象外とする
+  if (text === null) return problems.push(`${rel}: SKILL.md がない`);
   const fm = parseFrontmatter(text);
   if (!fm) return problems.push(`${rel}: frontmatter がない`);
   if (fm.name !== name) problems.push(`${rel}: name "${fm.name ?? ''}" がディレクトリ名 "${name}" と一致しない`);

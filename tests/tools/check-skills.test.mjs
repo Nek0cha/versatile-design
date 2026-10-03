@@ -1,7 +1,7 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { fileURLToPath } from 'node:url';
-import { mkdtemp } from 'node:fs/promises';
+import { mkdir, mkdtemp } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { checkSkills } from '../../tools/check-skills.mjs';
 
@@ -17,4 +17,9 @@ test('detects denylisted term case-insensitively', async () =>
 test('handles a root without skills dir', async () => {
   const d = await mkdtemp(`${tmpdir()}/cs-`);
   assert.deepEqual(await checkSkills(d, { denylist: ['x'] }), []);
+});
+test('detects a skill directory without SKILL.md', async () => {
+  const d = await mkdtemp(`${tmpdir()}/cs-`);
+  await mkdir(`${d}/skills/empty`, { recursive: true });
+  assert.match((await checkSkills(d)).join('\n'), /skills\/empty.*SKILL\.md/);
 });
