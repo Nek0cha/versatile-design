@@ -221,12 +221,11 @@ export function MenuPanel({ open, children }: { open: boolean; children: ReactNo
 import { motion, useReducedMotion } from "motion/react";
 import { duration, ease, springSoft } from "./motion-tokens";
 
-export function SortableRow({ id, label }: { id: string; label: string }) {
+export function SortableRow({ label }: { label: string }) {
   const reduce = useReducedMotion();
   return (
     <motion.li
       layout={!reduce}
-      layoutId={id}
       transition={reduce ? { duration: duration.fast, ease: ease.outQuint } : springSoft}
       className="h-10 rounded-md bg-surface-1 px-3 text-text"
     >

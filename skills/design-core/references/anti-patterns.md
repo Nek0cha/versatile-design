@@ -98,7 +98,7 @@ AI 感を生む定番のパターンを、3段階で管理する。トークン�
 
 - 禁止事項：`bg-indigo-500`、`text-slate-400` のような標準パレットのクラスを書く。
 - 理由：標準パレットの色は誰が使っても同じになり、AI 感の主な発生源である。テーマの差し替えもできない。
-- 代わりに：色はすべて自前のトークンとして定義し（`references/color.md`）、`bg-surface-1` や `text-muted` のようなトークン名のクラスを使う。
+- 代わりに：色はすべて自前のトークンとして定義し（`references/color.md`）、`bg-surface-1` や `text-text-muted` のようなトークン名のクラスを使う。
 - 検出：lint: `tailwind-default-palette`
 
 ### X12 全要素が同じ速さ・方向・遅延で動くこと

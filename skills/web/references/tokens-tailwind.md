@@ -56,13 +56,13 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 |---|---|
 | `--shadow-float` | 浮いているもの（メニュー、ポップオーバー、ダイアログ、浮いたツールバー、トースト）専用の1種類 |
 
-影はこれ1つだけを定義する。段階を増やさない（`references/mode-app.md` の影の節）。区切りに影を使わない。値はテーマごとに差し替えるが、名前は1つのままにする。ダークでは影がほとんど見えないため、浮いているものには `bg-surface-2` と `border border-line` も付ける（`color.md` の5節）。
+影はこれ1つだけを定義する。段階を増やさない（`references/mode-app.md` の影の節）。区切りに影を使わない。値はテーマごとに差し替えるが、名前は1つのままにする。Tailwind v4 は影の値を `shadow-float` クラスに直接書き込むため、色と違って `--shadow-float` を差し替えても効かない。テーマごとの値は `--shadow-float-value` に置き、`@theme inline` の `--shadow-float` から参照する（2節）。ダークでは影がほとんど見えないため、浮いているものには `bg-surface-2` と `border border-line` も付ける（`color.md` の5節）。
 
 ### フォント
 
 | トークン | 用途 |
 |---|---|
-| `--font-display` | 見出し。`typography-ja.md` の例の `--font-heading` に当たる |
+| `--font-display` | 見出し |
 | `--font-body` | 本文、UI の文字 |
 | `--font-mono` | 数字、コード、ログ |
 
@@ -131,9 +131,6 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --radius-island: 10px;
   --radius-lg: 14px;
 
-  /* 影（浮いているもの専用の1種類） */
-  --shadow-float: 0 12px 32px -8px oklch(0 0 0 / 0.5), 0 2px 8px oklch(0 0 0 / 0.3);
-
   /* フォント（欧文、和文、総称ファミリーの順） */
   --font-display: "Instrument Serif", "Shippori Mincho", serif;
   --font-body: "Instrument Sans", "Zen Kaku Gothic New", sans-serif;
@@ -155,6 +152,8 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 @theme inline {
   --color-line-control: var(--color-text-faint);
   --color-success: var(--color-accent);
+  /* 影：Tailwind は影の値をクラスに直接書き込むため、テーマで差し替える値は別の変数に置く */
+  --shadow-float: var(--shadow-float-value);
 }
 
 /* 所要時間（@theme の名前空間にないため :root に置く） */
@@ -163,6 +162,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --duration-base: 180ms;
   --duration-slow: 240ms;
   --duration-reveal: 800ms;
+  --shadow-float-value: 0 12px 32px -8px oklch(0 0 0 / 0.5), 0 2px 8px oklch(0 0 0 / 0.3);
   color-scheme: dark;
 }
 
@@ -184,7 +184,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
   --color-danger: oklch(0.55 0.18 25);
   --color-danger-ink: oklch(0.985 0.006 70);
   --color-warning: oklch(0.62 0.13 75);
-  --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 70 / 0.18), 0 2px 8px oklch(0.2 0.01 70 / 0.08);
+  --shadow-float-value: 0 12px 32px -8px oklch(0.2 0.01 70 / 0.18), 0 2px 8px oklch(0.2 0.01 70 / 0.08);
 }
 
 /* ライト：OS がライトで、利用者がダークを明示的に選んでいない場合（上と同じ値） */
@@ -206,7 +206,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
     --color-danger: oklch(0.55 0.18 25);
     --color-danger-ink: oklch(0.985 0.006 70);
     --color-warning: oklch(0.62 0.13 75);
-    --shadow-float: 0 12px 32px -8px oklch(0.2 0.01 70 / 0.18), 0 2px 8px oklch(0.2 0.01 70 / 0.08);
+    --shadow-float-value: 0 12px 32px -8px oklch(0.2 0.01 70 / 0.18), 0 2px 8px oklch(0.2 0.01 70 / 0.08);
   }
 }
 
@@ -222,6 +222,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 - `--color-*: initial;` は、Tailwind の標準パレット（`slate`、`indigo` など）と `black`、`white` をすべて消す。消すと、標準パレットのクラスを書いても CSS が生成されないため、使えば画面上ですぐ気づく。`bg-transparent` と `bg-current` は `@theme` に依存しないため残る。
 - 角丸、影、フォント、イージング、`animate-*` も同じ書き方で既定値を消す。`--animate-*` の既定値には `linear` のアニメーションが含まれるため、残さない。
 - `--default-font-family` には `--font-body` と同じ値を直接書く。Tailwind が `html` に当てる書体であり、`--font-*: initial;` で既定の参照先が消えるためである。
+- 影だけは `--shadow-float` ではなく `--shadow-float-value` を差し替える（1節の影）。
 - ライトの値は2か所に同じものを書く。片方だけ直すと、OS の設定によってだけ色が変わる不具合になる。値を変えたら両方を直す。
 - 純粋な黒を基本にする場合（`color.md` の4節）は、ダークの `--color-surface-0` を `oklch(0 0 0)` にし、グレーの彩度を 0 にする。
 

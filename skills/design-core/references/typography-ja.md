@@ -46,7 +46,7 @@
 
 ```css
 :root {
-  --font-heading: "Instrument Serif", "Shippori Mincho", serif;
+  --font-display: "Instrument Serif", "Shippori Mincho", serif;
   --font-body: "Instrument Sans", "Zen Kaku Gothic New", sans-serif;
   --font-mono: "DM Mono", "Zen Kaku Gothic New", monospace;
 }
