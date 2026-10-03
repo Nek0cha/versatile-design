@@ -97,7 +97,7 @@ const tripleList = {
     const hits = [];
     for (const line of lines(text)) {
       if (!line.text || [...line.text].length > TRIPLE_LINE) continue;
-      const items = line.text.split(/[、。,.]/).map((s) => s.trim()).filter(Boolean);
+      const items = line.text.split(/[、。]|[,.](?!\d)/).map((s) => s.trim()).filter(Boolean);
       if (items.length >= 3 && items.every((s) => [...s].length <= TRIPLE_ITEM)) {
         hits.push({ index: line.start, message: '三つ並べの型。一番伝えたい1つに絞ること' });
       }

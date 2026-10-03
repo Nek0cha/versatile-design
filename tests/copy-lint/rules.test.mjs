@@ -53,3 +53,7 @@ test('dekimasu ratio reports counts once', () => {
 test('scans copy inside tsx', () => {
   assert.deepEqual(ids('<h1 className="transform">Seamless flow</h1>\n', 'x.tsx'), ['empty-word']);
 });
+test('triple list does not split decimals or thousands separators', () => {
+  assert.deepEqual(ids('0.3秒、push の手前で。\n'), []);
+  assert.deepEqual(ids('1,200円、3.5km、朝7時。\n'), ['triple-list']);
+});
