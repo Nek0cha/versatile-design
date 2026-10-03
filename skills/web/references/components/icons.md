@@ -51,7 +51,7 @@
 
 ### 文字の矢印と絵文字の禁止
 
-- ボタンやリンクの中に、文字の矢印（`→` `↗` `›` `»` `▼` など）を入れない。Iconify の矢印のアイコン（`ph:arrow-right`、`ph:caret-down`）を使う（`../design-core/references/anti-patterns.md` の X10）。lint の `text-arrow` が検出する。
+- ボタンやリンクの中に、文字の矢印（`→` `↗` `›` `»` `▼` や `&rarr;` などの文字参照）を入れない。Iconify の矢印のアイコン（`ph:arrow-right`、`ph:caret-down`）を使う（`../design-core/references/anti-patterns.md` の X10）。lint の `text-arrow` が検出する。
 - 絵文字をアイコンの代わりに使わない（同 X6）。lint の `emoji-icon` が、ボタン、リンク、リストの項目の中の絵文字を検出する。
 - 矢印キーなどのキーの表示も、文字の矢印ではなくアイコンで表す（`references/mode-app.md` の7節）。
 

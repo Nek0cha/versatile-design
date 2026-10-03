@@ -126,6 +126,8 @@ function hexToHueSat(hex) {
 // ルール本体
 
 const ARROWS = '→↗↘←↑↓›‹»«▼▲▶◀➜➔⟶';
+// 矢印を表す HTML の文字参照
+const ARROW_ENTITIES = /&(?:rarr|larr|uarr|darr|raquo|laquo|rsaquo|lsaquo);/g;
 const ARROW_TAGS = ['button', 'a', 'Button', 'Link'];
 const EMOJI_TAGS = ['button', 'a', 'Button', 'Link', 'li'];
 // 記号として普通に使う文字は絵文字として扱わない
@@ -136,17 +138,14 @@ const textArrow = {
   extensions: MARKUP,
   check(source) {
     const out = [];
+    const message = 'ボタンやリンク内の文字の矢印はフォントで形と位置が崩れる。Iconify の SVG アイコンに置き換える';
     for (const { offset, text } of childTexts(source, ARROW_TAGS)) {
       for (let i = 0; i < text.length; i++) {
-        if (ARROWS.includes(text[i])) {
-          out.push({
-            index: offset + i,
-            message: 'ボタンやリンク内の文字の矢印はフォントで形と位置が崩れる。Iconify の SVG アイコンに置き換える',
-          });
-        }
+        if (ARROWS.includes(text[i])) out.push({ index: offset + i, message });
       }
+      for (const m of text.matchAll(ARROW_ENTITIES)) out.push({ index: offset + m.index, message });
     }
-    return out;
+    return out.sort((a, b) => a.index - b.index);
   },
 };
 
@@ -218,13 +217,19 @@ const purpleBlueGradient = {
       const open = m.index + m[0].length - 1;
       const end = closeOf(source, open, '(', ')');
       if (end === -1) continue;
-      const hexes = [...source.slice(open, end).matchAll(/#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9a-fA-F])/g)];
-      if (hexes.length === 0) continue;
-      const allBluePurple = hexes.every(([, hex]) => {
+      const body = source.slice(open, end);
+      // 各色が青〜紫の範囲にあるかを並べる。oklch の無彩色（C < 0.03）は判定から外す
+      const inRange = [];
+      for (const [, hex] of body.matchAll(/#([0-9a-fA-F]{8}|[0-9a-fA-F]{6}|[0-9a-fA-F]{3,4})(?![0-9a-fA-F])/g)) {
         const { hue, sat } = hexToHueSat(hex);
-        return sat > 0 && hue >= 220 && hue <= 300;
-      });
-      if (allBluePurple) out.push({ index: m.index, message });
+        inRange.push(sat > 0 && hue >= 220 && hue <= 300);
+      }
+      for (const [, c, hue] of body.matchAll(/oklch\(\s*[\d.]+%?\s+([\d.]+%?)\s+([\d.]+)(?:deg)?/gi)) {
+        const chroma = c.endsWith('%') ? (parseFloat(c) / 100) * 0.4 : parseFloat(c);
+        if (chroma < 0.03) continue;
+        inRange.push(Number(hue) >= 220 && Number(hue) <= 300);
+      }
+      if (inRange.length > 0 && inRange.every(Boolean)) out.push({ index: m.index, message });
     }
     return out;
   },
@@ -234,7 +239,11 @@ const GENERIC_FAMILIES = new Set([
   'serif', 'sans-serif', 'monospace', 'cursive', 'fantasy', 'math', 'emoji', 'fangsong',
   'ui-serif', 'ui-sans-serif', 'ui-monospace', 'ui-rounded',
 ]);
-const DEFAULT_FONTS = new Set(['inter', 'roboto', 'poppins', 'arial', 'helvetica', 'system-ui', '-apple-system', 'segoe ui']);
+const DEFAULT_FONTS = new Set([
+  'inter', 'roboto', 'poppins', 'arial', 'helvetica', 'helvetica neue', 'system-ui', '-apple-system',
+  'blinkmacsystemfont', 'segoe ui', 'noto sans',
+  'apple color emoji', 'segoe ui emoji', 'segoe ui symbol', 'noto color emoji',
+]);
 
 const genericFontOnly = {
   id: 'generic-font-only',
@@ -342,7 +351,7 @@ export const rules = [
 // プロジェクト全体を見るルール
 
 const MOTION_USE = /@keyframes|(?<![\w-])animation\s*:|motion\/react|\bgsap\b/;
-const MOTION_GUARD = /prefers-reduced-motion|useReducedMotion|reducedMotion/;
+const MOTION_GUARD = /prefers-reduced-motion|useReducedMotion|reducedMotion|(?<![\w-])motion-(?:reduce|safe):/;
 
 const noReducedMotion = {
   id: 'no-reduced-motion',
@@ -356,7 +365,7 @@ const noReducedMotion = {
           file: f.path,
           line: lineOf(f.source, m.index),
           rule: 'no-reduced-motion',
-          message: 'アニメーションがあるのに、動きを減らす設定（prefers-reduced-motion）への対応がどのファイルにもない。@media (prefers-reduced-motion: reduce) や Motion の useReducedMotion で動きを減らす',
+          message: 'アニメーションがあるのに、動きを減らす設定（prefers-reduced-motion）への対応がどのファイルにもない。@media (prefers-reduced-motion: reduce)、Tailwind の motion-reduce:／motion-safe:、Motion の useReducedMotion のいずれかで動きを減らす',
         },
       ];
     }

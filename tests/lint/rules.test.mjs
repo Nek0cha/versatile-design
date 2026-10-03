@@ -230,3 +230,50 @@ test('a directive comment does not hide a violation earlier on its line', () => 
   const css = '.a { transition: all 0.2s var(--e); } /* design-lint-disable-next-line transition-all -- 理由 */\n.b { transition: all 0.2s var(--e); }';
   assert.deepEqual(hits(css, 'x.css', 'transition-all').map((v) => v.line), [1]);
 });
+
+// 最終レビューの指摘への対応
+test('generic-font-only flags system font stacks', () => {
+  assert.equal(
+    hits('body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }', 'x.css', 'generic-font-only').length,
+    1,
+  );
+  assert.equal(
+    hits(
+      '@theme { --font-sans: ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji"; }',
+      'x.css',
+      'generic-font-only',
+    ).length,
+    1,
+  );
+  assert.equal(hits('body { font-family: "Helvetica Neue", "Noto Sans", sans-serif; }', 'x.css', 'generic-font-only').length, 1);
+  assert.equal(
+    hits('body { font-family: "Instrument Sans", BlinkMacSystemFont, sans-serif; }', 'x.css', 'generic-font-only').length,
+    0,
+  );
+});
+test('no-reduced-motion accepts tailwind motion-reduce and motion-safe variants', () => {
+  const [rule] = projectRules;
+  const anim = { path: 'a.css', source: '@keyframes x {}' };
+  assert.equal(rule.check([anim]).length, 1);
+  assert.equal(rule.check([anim, { path: 'b.tsx', source: '<div className="motion-reduce:animate-none" />' }]).length, 0);
+  assert.equal(rule.check([anim, { path: 'b.tsx', source: '<div className="motion-safe:animate-fade" />' }]).length, 0);
+});
+test('text-arrow flags arrow entities in buttons and links', () => {
+  for (const e of ['&rarr;', '&raquo;', '&laquo;', '&larr;', '&uarr;', '&darr;', '&rsaquo;', '&lsaquo;']) {
+    assert.equal(hits(`<a href="/x">次へ ${e}</a>`, 'x.html', 'text-arrow').length, 1, e);
+  }
+  assert.equal(hits('<button>A &amp; B</button>', 'x.tsx', 'text-arrow').length, 0);
+  assert.equal(hits('<p>A &rarr; B</p>', 'x.html', 'text-arrow').length, 0);
+});
+test('purple-blue-gradient understands oklch colours', () => {
+  const blue = '.a { background: linear-gradient(oklch(0.6 0.2 260), oklch(0.5 0.25 290)); }';
+  assert.equal(hits(blue, 'x.css', 'purple-blue-gradient').length, 1);
+  const withGray = '.a { background: linear-gradient(oklch(60% 0.2 230 / 0.8), oklch(0.98 0.01 40), oklch(0.5 0.25 290)); }';
+  assert.equal(hits(withGray, 'x.css', 'purple-blue-gradient').length, 1);
+  const mixed = '.a { background: linear-gradient(oklch(0.6 0.2 260), oklch(0.7 0.18 50)); }';
+  assert.equal(hits(mixed, 'x.css', 'purple-blue-gradient').length, 0);
+  const grays = '.a { background: linear-gradient(oklch(0.2 0.01 260), oklch(0.9 0.02 280)); }';
+  assert.equal(hits(grays, 'x.css', 'purple-blue-gradient').length, 0);
+  const hexAndOklch = '.a { background: linear-gradient(#6366f1, oklch(0.7 0.18 50)); }';
+  assert.equal(hits(hexAndOklch, 'x.css', 'purple-blue-gradient').length, 0);
+});
