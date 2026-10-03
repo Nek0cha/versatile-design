@@ -32,7 +32,7 @@ references は最初にすべて読まない。次の表の段階に来たとき
 |---|---|---|
 | 1. 読み込み | 優先順位を把握する | このファイル、`user-preferences.md` |
 | 2. コンセプト | 3行のコンセプト、サイト系／アプリ系、テーマを決めて宣言する | `references/concept-brief.md` |
-| 3. トークン | 色、書体、余白、角丸、影、イージングを決める | `references/color.md`、references/typography-ja.md（和文と欧文の組み合わせ）、`references/anti-patterns.md` |
+| 3. トークン | 色、書体、余白、角丸、影、イージングを決める | `references/color.md`、`references/typography-ja.md`（和文と欧文の組み合わせ）、`references/anti-patterns.md` |
 | 4. 実装 | トークンだけを使って部品と画面を作る | 媒体別スキルの資料。`references/anti-patterns.md` の禁止事項を守る |
 | 5. 検証 | 自動チェック、スクリーンショット、自己批評 | `references/critique.md` |
 | 6. 報告 | コンセプト、実施した検証、直しきれなかった点を伝える | なし |
