@@ -18,7 +18,7 @@
 - 各タブにはアイコン（Iconify）とラベルを組にして置く。アイコンだけのタブにしない。件数を付ける場合は、ラベルの後ろに `text-text-muted` の等幅数字で置く（`references/mode-app.md` の7節）。
 - 選択中のタブの文字は `text-text-strong`、それ以外は `text-text-muted` にし、ホバーで `text-text` にする。
 - タブには `user-select: none` を付ける。
-- フォーカスリングは、キーボード操作のときにアクセントの 2px の線で付ける。
+- フォーカスリングは、キーボード操作のとき（`data-focus-visible`）にアクセントの 2px の線で付ける。タブの内容（`TabPanel`）もフォーカスを受けるため、同じリングを付ける。Tailwind v4 の `outline-none` は線の種類を `none` にし、後から付けた `outline-2` の線も消えてしまうため、フォーカスリングを出す要素には `outline-none` を書かない。
 
 ## やってはいけないこと
 
@@ -68,7 +68,7 @@ export function ProjectTabs() {
             <Tab
               id={tab.id}
               className={[
-                "relative flex h-10 cursor-default select-none items-center gap-2 px-3 text-sm text-text-muted outline-none",
+                "relative flex h-10 cursor-default select-none items-center gap-2 px-3 text-sm text-text-muted",
                 "transition-colors duration-(--duration-fast) ease-out-quint",
                 "data-hovered:text-text data-selected:text-text-strong",
                 "data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent",
@@ -86,7 +86,7 @@ export function ProjectTabs() {
           )}
         </TabList>
         {tabs.map((tab) => (
-          <TabPanel key={tab.id} id={tab.id} className="min-h-64 py-4 text-text outline-none">
+          <TabPanel key={tab.id} id={tab.id} className="min-h-64 rounded-md py-4 text-text data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent">
             {tab.label}の内容が入る。
           </TabPanel>
         ))}
@@ -124,7 +124,7 @@ export function ViewSwitcher({ onChange }: { onChange: (view: string) => void })
             <Tab
               id={view.id}
               className={[
-                "relative flex h-8 cursor-default select-none items-center gap-1.5 rounded-md px-2.5 text-sm text-text-muted outline-none",
+                "relative flex h-8 cursor-default select-none items-center gap-1.5 rounded-md px-2.5 text-sm text-text-muted",
                 "transition-colors duration-(--duration-fast) ease-out-quint",
                 "data-hovered:text-text data-selected:text-text-strong",
                 "data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent",

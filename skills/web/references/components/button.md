@@ -74,11 +74,12 @@ function PendingMark() {
   );
 }
 
-type ButtonProps = Omit<AriaButtonProps, "children" | "className"> & {
+// 読み込み中になりうるボタン（isPending を渡すもの）は、印を出す場所としてアイコンを必ず持つ。
+// アイコンのないボタンに印を足すと、その分だけ幅が変わるためである
+type ButtonProps = Omit<AriaButtonProps, "children" | "className" | "isPending"> & {
   variant?: Variant;
-  icon?: string;
   children: ReactNode;
-};
+} & ({ icon?: string; isPending?: never } | { icon: string; isPending: boolean });
 
 export function Button({ variant = "secondary", icon, isPending, children, ...props }: ButtonProps) {
   return (
@@ -109,6 +110,7 @@ export function PublishActions({ saving, onPublish }: { saving: boolean; onPubli
 }
 ```
 
+- `isPending` を渡すボタンは、型でアイコンを必須にしている。印はアイコンと同じ 16px の場所に入れ替わるため、読み込み中になっても幅が変わらない。
 - `isPending` の間、React Aria はボタンの押下を無効にし、`data-pending` を付け、読み上げにも処理中であることを伝える。`isDisabled` と違ってフォーカスは残る。
 - 処理中の印を回す動きは、減速と加速を繰り返すカーブ（`--ease-in-out-quart` と同じ値）にする。`linear` で回し続けない（`../design-core/references/anti-patterns.md` の X13）。動きを減らす設定のときは回さず、不透明度だけを変える。
 - 0.3秒未満で終わる処理では印を出さない。遅れて出す作り方は loading.md のレシピに従う。

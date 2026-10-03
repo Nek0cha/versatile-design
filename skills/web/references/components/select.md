@@ -14,7 +14,7 @@
 - 一覧の開閉は、`--duration-base`（180ms）と `--ease-out-quint` で、上下 4px の移動と不透明度を同時に変える。一覧はボタンの側から出てくる向きに動かす（下に開くときは上から、上に開くときは下から）。閉じるときは `--duration-fast`（120ms）で、開くときより短くする。
 - 動きを減らす設定のときは、移動をやめ、不透明度の変化だけを `--duration-fast` で行う。
 - 選択中の項目には、チェックのアイコン（`ph:check`）を項目の決まった位置に付ける。色だけで示さない。アイコンの場所は選択されていない項目でも確保し、文字の位置を揃える。
-- キーボードで移動中の項目（`data-focused`）は面の明度（`bg-surface-3`）で示す。マウスのホバーと同じ見た目にする。
+- キーボードで移動中の項目（`data-focused`）は面の明度（`bg-surface-3`）で示す。マウスのホバーと同じ見た目にする。項目と一覧に付けた `outline-none` は、この面の明度をフォーカスの印の代わりにするためのものであり、印を持たない要素には付けない。
 - 一覧は浮いているものとして、`rounded-lg`、`bg-surface-2`、`border border-line`、`shadow-float` の組で作る。一覧の幅はボタンの幅（`--trigger-width`）以上にする。
 - 項目の高さは密な一覧の 36px にし、項目には `user-select: none` を付ける。
 - 上下の矢印キーで移動、Enter で確定、Esc で閉じる、文字を打つとその文字で始まる項目へ移る、という React Aria の標準のキーボード操作を消さない。
@@ -61,7 +61,7 @@ const optionClass = [
 
 export function SyncIntervalSelect() {
   return (
-    <Select defaultSelectedKey="15m" className="flex w-56 flex-col gap-1.5">
+    <Select defaultValue="15m" className="flex w-56 flex-col gap-1.5">
       <Label className="select-none text-sm text-text-muted">同期の間隔</Label>
       <Button
         className={[
@@ -122,7 +122,7 @@ const popoverMotion = [
 
 export function RegionComboBox() {
   return (
-    <ComboBox defaultItems={regions} menuTrigger="focus" className="flex w-64 flex-col gap-1.5">
+    <ComboBox defaultItems={regions} menuTrigger="focus" allowsEmptyCollection className="flex w-64 flex-col gap-1.5">
       <Label className="select-none text-sm text-text-muted">配送先の都道府県</Label>
       <div className="relative">
         <Icon icon="ph:magnifying-glass" aria-hidden className="pointer-events-none absolute top-1/2 left-3 size-4 -translate-y-1/2 text-text-muted" />
@@ -169,6 +169,7 @@ export function RegionComboBox() {
 ```
 
 - `ComboBox` は入力した文字で項目を絞り込み、上下の矢印キーで候補を移動し、Enter で確定する。確定した値は入力欄に表示される。
+- `allowsEmptyCollection` を付けないと、一致する項目がなくなった時点で一覧が閉じ、`renderEmptyState` の表示が出ない。
 - `defaultItems` を渡すと、絞り込みは React Aria が行う。サーバーで検索する場合は `items` と `onInputChange` を使う。
 
 ## 確認方法

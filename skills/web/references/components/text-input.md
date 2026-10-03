@@ -11,7 +11,7 @@
 - ラベルは入力欄の上に常に表示する（`text-text-muted`）。補足の説明はラベルと入力欄の間か入力欄の下に置く。
 - エラーは入力欄の下に、危険の色（`--color-danger`）の文字とアイコン（Iconify の `ph:warning-circle` など）で出す。入力欄の枠も危険の色にする。色だけで伝えない（`references/intuitive-ui.md` の2.5節）。
 - エラーの文章は、何が起きたかと直し方を書き、選択してコピーできるまま残す（`select-none` を付けない）。
-- 検証は入力の途中では行わず、欄を離れたときか送信のときに行う。React Aria の `TextField` に `validationBehavior="aria"` を指定し、エラーを `aria-invalid` と `aria-describedby` で入力欄につなぐ（React Aria が自動で行う）。
+- 検証は入力の途中では行わず、欄を離れたときか送信のときに行う。React Aria の `TextField` に `validationBehavior="aria"` を指定し、エラーの状態は自分で持って `isInvalid` で渡す。エラーの文章は React Aria が `aria-invalid` と `aria-describedby` で入力欄につなぐ。`validate` は値が変わるたびに検査し直すため、入力の途中でエラーが出る。
 - フォーカスリングはアクセント（`--color-accent`）の 2px の線を `outline-offset: 2px` で付ける。入力欄は文字を打つ場所なので、マウスで押したときもフォーカスリングを出す（`data-focused`）。
 - 入力欄の枠は操作できる部品の枠（`border-line-control`、3:1 以上）にする。区切り線の `border-line` を使わない（`../design-core/references/color.md` の5節）。
 - 入力欄の幅は入る文字の量に合わせる。郵便番号や数桁のコードの欄を全幅にしない。
@@ -31,17 +31,32 @@
 ラベル、説明、エラーを持つ1行の入力欄である。
 
 ```tsx
+import { useState } from "react";
 import { FieldError, Input, Label, Text, TextField } from "react-aria-components";
 import { Icon } from "@iconify/react";
 
-export function EmailField() {
+// 空のときは null を返す。必須の確認は送信のときに行い、触れただけの欄にエラーを出さない
+export function checkEmail(value: string): string | null {
+  if (value === "") return null;
+  return value.includes("@") ? null : "「@」を含むメールアドレスを入力する。例：name@example.com";
+}
+
+export function EmailField({ error, onErrorChange }: { error: string | null; onErrorChange: (error: string | null) => void }) {
+  const [value, setValue] = useState("");
   return (
     <TextField
       name="email"
       type="email"
       isRequired
+      value={value}
+      onChange={(next) => {
+        setValue(next);
+        // 直し始めたらエラーを消す。次に検査するのは欄を離れたとき
+        if (error) onErrorChange(null);
+      }}
+      onBlur={() => onErrorChange(checkEmail(value))}
+      isInvalid={error !== null}
       validationBehavior="aria"
-      validate={(value) => (value.includes("@") ? null : "「@」を含むメールアドレスを入力する。例：name@example.com")}
       className="group flex w-80 flex-col gap-1.5"
     >
       <Label className="select-none text-sm text-text-muted">通知を受け取るメールアドレス</Label>
@@ -61,20 +76,38 @@ export function EmailField() {
         更新のお知らせだけを送る。
       </Text>
       <FieldError className="flex items-start gap-1.5 text-xs text-danger">
-        {({ validationErrors }) => (
-          <>
-            <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
-            <span>{validationErrors.join(" ")}</span>
-          </>
-        )}
+        <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
+        <span>{error}</span>
       </FieldError>
     </TextField>
   );
 }
+
+// 送信のときは、空の欄も含めてすべての欄を検査し、最初のエラーの欄にフォーカスを移す
+export function SubscribeForm({ onSubmit }: { onSubmit: (email: string) => void }) {
+  const [error, setError] = useState<string | null>(null);
+  return (
+    <form
+      noValidate
+      onSubmit={(event) => {
+        event.preventDefault();
+        const email = String(new FormData(event.currentTarget).get("email") ?? "");
+        const next = email === "" ? "メールアドレスを入力する。" : checkEmail(email);
+        setError(next);
+        if (next) event.currentTarget.querySelector<HTMLInputElement>("input[name=email]")?.focus();
+        else onSubmit(email);
+      }}
+    >
+      <EmailField error={error} onErrorChange={setError} />
+    </form>
+  );
+}
 ```
 
-- `validationBehavior="aria"` では、送信を止めずに、欄を離れたときと値が変わったときにエラーの状態を付け直す。入力の途中でエラーを出さないため、エラーの表示は欄を離れた後（`onBlur` の後）に限る作りにしてもよい。
-- `FieldError` は、エラーがあるときだけ描画される。子に関数を1つだけ渡すと `validate` が返した文章（`validationErrors`）を受け取れるため、アイコンと並べても文章を2か所に書かずに済む。アイコンも関数の中に入れる。
+- エラーの状態は自分で持ち、`isInvalid` で React Aria に渡す。`validationBehavior="aria"` の `validate` は、値が変わるたびに検査し直す（入力の途中でもエラーが出る）ため、この欄では使わない。検査するのは、欄を離れたとき（`onBlur`）と送信のときだけにする。
+- 空の欄は、欄を離れただけではエラーにしない。Tab で通り過ぎただけの欄が赤くならないようにし、必須の確認は送信のときに行う。
+- エラーが出た後に入力を直し始めたら、エラーを消す。新しいエラーは、次に欄を離れたときまで出さない。
+- `FieldError` は、`isInvalid` が真のときだけ描画される。`isInvalid` を使う場合、`validationErrors` は空になるため、文章は自分の状態から描画する。React Aria は、エラーの文章を `aria-describedby` で入力欄につなぎ、`aria-invalid` を付ける。
 
 文字数の上限があるテキストエリアである。
 
@@ -87,13 +120,18 @@ const MAX = 200;
 
 export function NoteField() {
   const [value, setValue] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const rest = MAX - value.length;
   return (
     <TextField
       value={value}
-      onChange={setValue}
+      onChange={(next) => {
+        setValue(next);
+        if (error) setError(null);
+      }}
+      onBlur={() => setError(value.length > MAX ? `${value.length - MAX}文字多い。${MAX}文字以内に短くする。` : null)}
+      isInvalid={error !== null}
       validationBehavior="aria"
-      validate={(v) => (v.length > MAX ? `${v.length - MAX}文字多い。${MAX}文字以内に短くする。` : null)}
       className="flex w-full max-w-[34em] flex-col gap-1.5"
     >
       <Label className="select-none text-sm text-text-muted">担当者へのメモ</Label>
@@ -108,13 +146,10 @@ export function NoteField() {
       />
       <div className="flex items-start justify-between gap-3">
         <FieldError className="flex items-start gap-1.5 text-xs text-danger">
-          {({ validationErrors }) => (
-            <>
-              <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
-              <span>{validationErrors.join(" ")}</span>
-            </>
-          )}
+          <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
+          <span>{error}</span>
         </FieldError>
+        {/* 残りの文字数は入力中も更新する。数がマイナスになったら危険の色にするが、エラーの文章は欄を離れたときに出す */}
         <Text slot="description" className={`ml-auto text-xs tabular-nums ${rest < 0 ? "text-danger" : "text-text-muted"}`}>
           残り {rest} 文字
         </Text>

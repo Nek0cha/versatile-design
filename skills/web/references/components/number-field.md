@@ -15,6 +15,7 @@
 - マウスのホイールでは値を変えない（`isWheelDisabled`）。スクロールの途中で値が変わる事故を防ぐ（`../design-core/references/anti-patterns.md` の X16）。
 - 単位は入力欄の中か直後に `text-text-muted` で添え、入力する値と区別する。単位を値の文字列に混ぜない。
 - 数字は等幅（`font-variant-numeric: tabular-nums`、クラスは `tabular-nums`）で右寄せにする。値が変わっても桁の位置が動かない。
+- フォーカスリングは入力欄を囲む `Group` に付ける（`data-focus-within`）。入力欄そのものの `outline-none` は、リングを `Group` に移すためのものである。
 - 増減ボタンには `user-select: none` を付け、押下中の面（`data-pressed:bg-surface-3`）を付ける。押せる範囲は 24px 四方以上にする。
 - 数値パラメータの1行は「アイコン＋ラベル＋スライダー＋数値入力＋単位＋リセット」の構成にし、列の幅を CSS グリッドで固定する（`references/mode-app.md` の9節）。スライダーと数値入力は常に同じ値を示す。
 - リセットは、値が初期値と違うときだけ押せる状態にし、初期値のときも場所は確保しておく。
