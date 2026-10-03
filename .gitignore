@@ -1,0 +1,8 @@
+node_modules/
+screenshots/
+*.png
+.tmp/
+
+# lint エンジンのテスト用フィクスチャは除外ディレクトリの検証に必要なため追跡する
+!tests/fixtures/lint/engine/node_modules/
+!tests/fixtures/lint/engine/dist/
