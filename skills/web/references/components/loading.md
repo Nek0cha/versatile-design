@@ -96,25 +96,29 @@ function SkeletonRow({ index }: { index: number }) {
 
 type FileItem = { id: string; name: string; updated: string };
 
-export function FileList({ files, isLoading, total, loaded }: { files: FileItem[]; isLoading: boolean; total: number; loaded: number }) {
+// total が分かっている（進み具合が分かる）ときは、0.3秒を過ぎた時点から進捗を出す
+export function FileList({ files, isLoading, total, loaded }: { files: FileItem[]; isLoading: boolean; total: number | null; loaded: number }) {
   const phase = useLoadingPhase(isLoading);
+  const showProgress = total !== null ? phase !== "none" : phase === "progress";
   if (isLoading) {
     return (
       <section aria-busy="true" aria-label="ファイルの一覧" className="flex flex-col gap-3">
-        {phase === "progress" && (
-          <ProgressBar value={loaded} maxValue={total} className="flex flex-col gap-1.5 px-3">
+        {showProgress && (
+          <ProgressBar value={loaded} maxValue={total ?? 100} isIndeterminate={total === null} className="flex flex-col gap-1.5 px-3">
             {({ percentage }) => (
               <>
                 <span className="flex justify-between text-sm">
-                  <Label className="text-text">{total}件のファイルを読み込んでいる</Label>
-                  <span className="font-mono tabular-nums text-text-muted">{Math.round(percentage ?? 0)}%</span>
+                  <Label className="text-text">{total !== null ? `${total}件のファイルを読み込んでいる` : "ファイルの一覧を読み込んでいる"}</Label>
+                  {total !== null && <span className="font-mono tabular-nums text-text-muted">{Math.round(percentage ?? 0)}%</span>}
                 </span>
-                <span className="h-1 overflow-hidden rounded-full bg-surface-2">
-                  <span
-                    className="block h-full origin-left rounded-full bg-accent transition-transform duration-(--duration-base) ease-out-quint motion-reduce:transition-none"
-                    style={{ transform: `scaleX(${(percentage ?? 0) / 100})` }}
-                  />
-                </span>
+                {total !== null && (
+                  <span className="h-1 overflow-hidden rounded-full bg-surface-2">
+                    <span
+                      className="block h-full origin-left rounded-full bg-accent transition-transform duration-(--duration-base) ease-out-quint motion-reduce:transition-none"
+                      style={{ transform: `scaleX(${(percentage ?? 0) / 100})` }}
+                    />
+                  </span>
+                )}
               </>
             )}
           </ProgressBar>
@@ -148,6 +152,7 @@ export function FileList({ files, isLoading, total, loaded }: { files: FileItem[
 }
 ```
 
+- 件数が分からない（`total` が `null`）ときは、2秒を過ぎてから、何をしているかの文章だけを不定の進捗として出す。動く帯も付ける場合は、2つ目のコード例の不定の表示を使う。
 - `useLoadingPhase` は、処理が 0.3 秒未満で終われば `"none"` のまま戻るため、何も描画されない。
 - スケルトンの行と実際の行は、高さ（`h-13`、52px）、アイコンの大きさ、2段の構成を揃えている。置き換わっても、下にある部品の位置が変わらない。
 - 進捗のバーは幅ではなく `scaleX` で伸ばす（`references/motion-web.md` の1節。`width` を動かさない）。動きを減らす設定のときは、値の変化をすぐに反映する。
@@ -169,9 +174,9 @@ export function ConvertingStatus({ fileCount, onCancel }: { fileCount: number; o
         <span className="relative h-1 overflow-hidden rounded-full bg-surface-2">
           <motion.span
             className="absolute inset-y-0 left-0 w-1/3 rounded-full bg-accent"
-            // 繰り返し続く動きは 120〜240ms の対象外。1周 1.4 秒で往復させる。動きを減らす設定では移動せず、不透明度だけをゆっくり変える
+            // 繰り返し続く動きは 120〜240ms の対象外。1.4 秒かけて右端へ動き、折り返して戻る。動きを減らす設定では移動せず、不透明度だけをゆっくり変える
             animate={reduce ? { opacity: [1, 0.4, 1] } : { x: ["-100%", "300%"] }}
-            transition={{ duration: reduce ? 1.6 : 1.4, ease: [0.76, 0, 0.24, 1], repeat: Infinity }}
+            transition={{ duration: reduce ? 1.6 : 1.4, ease: [0.76, 0, 0.24, 1], repeat: Infinity, repeatType: reduce ? "loop" : "reverse" }}
           />
         </span>
       </ProgressBar>

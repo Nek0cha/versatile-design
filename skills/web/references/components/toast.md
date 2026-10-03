@@ -14,7 +14,7 @@
 - 取り消せる操作（削除、移動、アーカイブなど）のトーストには「元に戻す」ボタンを付ける。何が取り消されるかが分かるように、本文に対象の名前を書く（「『議事録』を削除した」）。
 - 「元に戻す」は、アプリの取り消しのショートカットキー（Ctrl+Z、macOS では ⌘Z）でも実行できるようにする。キーボードだけで操作する利用者は、トーストのボタンまで移動しにくい。
 - エラーのトーストは自動で消さない。閉じるボタンで閉じるまで残す。何が起きたか、なぜか、次に何をすればよいかを書き（`references/intuitive-ui.md` の2.4節）、文章は選択してコピーできるまま残す。エラーにはアイコン（`ph:warning-circle`）を付け、色だけで示さない。
-- 同時に表示するのは3件までにする。それより多い場合は、古いものから消す。新しいトーストは画面の端に最も近い位置（一番下）に出す。
+- 同時に表示するのは3件までにする。それより多い場合は、エラー以外の古いものから消す。エラーと、新しく出したトーストは押し出さない。押し出せるものがない場合（エラーが3件残っている場合など）は、3件を超えて表示する。新しいトーストは画面の端に最も近い位置（一番下）に出す。
 - 閉じるボタンはアイコンだけのボタンにし、`aria-label` とツールチップを付ける（`references/components/tooltip-popover-menu.md`）。
 - 読み上げにも伝える。トーストの一覧を `aria-live="polite"` の領域にし、エラーだけは `role="alert"` にして作業を中断して読み上げさせる。一覧全体を `<section aria-label="通知">` で包み、ランドマークとして移動できるようにする。
 - トーストは浮いているものとして、`rounded-lg`、`bg-surface-2`、`border border-line`、`shadow-float` の組で作る。
@@ -109,6 +109,8 @@ function ToastCard({ toast, paused, onClose }: { toast: ToastItem; paused: boole
       role={isError ? "alert" : undefined}
       initial={reduce ? { opacity: 0 } : { opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0, transition: { duration: reduce ? 0.12 : 0.18, ease: [0.22, 1, 0.36, 1] } }}
+      // 残ったトーストが詰めるときの移動。既定のばねではなく、トークンと同じ時間とカーブにする
+      transition={{ layout: { duration: 0.18, ease: [0.22, 1, 0.36, 1] } }}
       exit={{ opacity: 0, transition: { duration: 0.12, ease: [0.22, 1, 0.36, 1] } }}
       className="flex w-full items-start gap-3 rounded-lg border border-line bg-surface-2 py-2.5 pr-2 pl-3.5 shadow-float sm:w-96"
     >
@@ -164,9 +166,12 @@ export function ToastProvider({ children }: { children: ReactNode }) {
 
   const show = (options: ToastOptions) => {
     const next = [...listRef.current, { ...options, id: nextId.current++ }];
-    const overflow = next.slice(0, Math.max(0, next.length - MAX_VISIBLE));
-    update(next.slice(-MAX_VISIBLE));
-    // 3件を超えたら古いものから閉じる。取り消せる削除は、ここで確定する
+    // 3件を超えたら、エラー以外の古いものから閉じる。エラーは自動で消さないため押し出さない。新しく出したトーストも押し出さない
+    const overflow: ToastItem[] = [];
+    const evictable = next.slice(0, -1).filter((t) => t.tone !== "error");
+    while (next.length - overflow.length > MAX_VISIBLE && overflow.length < evictable.length) overflow.push(evictable[overflow.length]);
+    update(next.filter((t) => !overflow.includes(t)));
+    // 取り消せる削除は、ここで確定する
     for (const old of overflow) old.onClose?.("timeout");
   };
 

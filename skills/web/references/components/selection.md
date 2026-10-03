@@ -91,7 +91,8 @@ export function CopyButton({ value, label, valueRef }: { value: string; label: s
 
   return (
     <>
-      <TooltipTrigger delay={500}>
+      {/* 押してもツールチップを閉じない。既定（shouldCloseOnPress が true）では押した時点で閉じ、「コピーした」が見えない */}
+      <TooltipTrigger delay={500} shouldCloseOnPress={false}>
         <Button
           aria-label={label}
           onPress={copy}
@@ -143,6 +144,7 @@ export function ApiKeyRow({ apiKey }: { apiKey: string }) {
 
 - `AnimatePresence` の `mode="popLayout"` は、出ていくアイコンを配置から外し、入ってくるアイコンと同じ場所で重ねて入れ替える。ボタンの大きさは変わらない。
 - 1.5 秒の間にもう一度押した場合は、前のタイマーを消してから数え直す。画面から消えたときもタイマーを消す。
+- React Aria の `TooltipTrigger` は、既定ではボタンを押した時点でツールチップを閉じる。`shouldCloseOnPress={false}` にすると、マウスを載せたまま押した場合と、キーボードでフォーカスして Enter で押した場合に、ツールチップが開いたまま文言だけが「コピーした」に替わる。ツールチップが出る前（0.5 秒以内）に押した場合も、マウスが載っていれば 0.5 秒後に「コピーした」で出る。
 - 読み上げ用の `role="status"` の領域は、ボタンの外に常に置いておく。中の文字が変わったときに読み上げられる。
 
 ## 確認方法

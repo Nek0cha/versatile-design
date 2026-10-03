@@ -235,9 +235,14 @@ export function TaskRow({ title, due, onEdit, onDelete }: { title: string; due: 
         </TooltipTrigger>
         {/* 削除は直接置かず、「その他」のメニューの中に入れる */}
         <MenuTrigger>
-          <Button aria-label="その他の操作" className={iconButton}>
-            <Icon icon="ph:dots-three" aria-hidden className="size-4" />
-          </Button>
+          <TooltipTrigger delay={500}>
+            <Button aria-label="その他の操作" className={iconButton}>
+              <Icon icon="ph:dots-three" aria-hidden className="size-4" />
+            </Button>
+            <Tooltip offset={6} className="rounded-sm border border-line bg-surface-2 px-2 py-1 text-xs text-text shadow-float">
+              その他の操作
+            </Tooltip>
+          </TooltipTrigger>
           <Popover offset={4} placement="bottom end" className="min-w-44 rounded-lg border border-line bg-surface-2 p-1 shadow-float">
             <Menu onAction={(key) => key === "delete" && onDelete()} className="outline-none">
               <MenuItem id="delete" textValue="削除…" className="flex h-9 cursor-default select-none items-center gap-2 rounded-md px-2 text-sm text-danger outline-none data-focused:bg-surface-3">

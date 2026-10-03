@@ -166,7 +166,7 @@ export function StatusFilter({ value, onChange }: { value: string[]; onChange: (
 ショートカットキーを右端に揃えたメニューである。
 
 ```tsx
-import { Button, Header, Keyboard, Menu, MenuItem, MenuSection, MenuTrigger, Popover, Separator, Text } from "react-aria-components";
+import { Button, Header, Keyboard, Menu, MenuItem, MenuSection, MenuTrigger, Popover, Separator, Text, Tooltip, TooltipTrigger } from "react-aria-components";
 import { Icon } from "@iconify/react";
 
 // 修飾キーの表記を OS で切り替える。描画のたびに判定しないよう、モジュールの読み込み時に1回だけ決める
@@ -180,6 +180,14 @@ const popoverMotion = [
   "data-[placement=bottom]:data-entering:-translate-y-1 data-[placement=bottom]:data-exiting:-translate-y-1",
   "data-[placement=top]:data-entering:translate-y-1 data-[placement=top]:data-exiting:translate-y-1",
   "motion-reduce:transition-opacity motion-reduce:duration-(--duration-fast)",
+].join(" ");
+
+const tooltipClass = [
+  "rounded-sm border border-line bg-surface-2 px-2 py-1 text-xs text-text shadow-float select-none",
+  "transition-[opacity,translate] duration-(--duration-fast) ease-out-quint",
+  "data-entering:opacity-0 data-exiting:opacity-0",
+  "data-[placement=bottom]:data-entering:-translate-y-1 data-[placement=top]:data-entering:translate-y-1",
+  "motion-reduce:transition-opacity",
 ].join(" ");
 
 const itemClass = [
@@ -202,12 +210,18 @@ function Item({ id, icon, label, shortcut, danger }: { id: string; icon: string;
 export function FileMenu({ onAction }: { onAction: (id: string) => void }) {
   return (
     <MenuTrigger>
-      <Button
-        aria-label="ファイルの操作"
-        className="grid size-8 select-none place-items-center rounded-md text-text-muted data-hovered:bg-surface-2 data-pressed:bg-surface-3 data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent"
-      >
-        <Icon icon="ph:dots-three" aria-hidden className="size-5" />
-      </Button>
+      {/* アイコンだけのボタンなので、メニューを開くボタンにもツールチップを付ける。押してメニューが開くとツールチップは閉じる */}
+      <TooltipTrigger delay={500}>
+        <Button
+          aria-label="ファイルの操作"
+          className="grid size-8 select-none place-items-center rounded-md text-text-muted data-hovered:bg-surface-2 data-pressed:bg-surface-3 data-focus-visible:outline-2 data-focus-visible:outline-offset-2 data-focus-visible:outline-accent"
+        >
+          <Icon icon="ph:dots-three" aria-hidden className="size-5" />
+        </Button>
+        <Tooltip offset={6} className={tooltipClass}>
+          ファイルの操作
+        </Tooltip>
+      </TooltipTrigger>
       <Popover offset={4} placement="bottom end" className={`min-w-56 rounded-lg border border-line bg-surface-2 p-1 shadow-float ${popoverMotion}`}>
         <Menu onAction={(key) => onAction(String(key))} disabledKeys={["move"]} className="outline-none">
           <MenuSection>
@@ -227,7 +241,7 @@ export function FileMenu({ onAction }: { onAction: (id: string) => void }) {
 }
 ```
 
-- メニューを開くボタンはアイコンだけだが、メニューは開くとすぐ中身が見えるため、ツールチップは付けなくてよい。`aria-label` は必ず付ける。付けたい場合は `IconButton` と同じく `TooltipTrigger` で包む。
+- メニューを開くボタンも、アイコンだけのボタンとして `aria-label` とツールチップの両方を付ける。`MenuTrigger` の中で `TooltipTrigger` が `Button` を包んでも、メニューを開く動作は `Button` に届く。ボタンを押すと、ツールチップは閉じてメニューが開く（`TooltipTrigger` の `shouldCloseOnPress` の既定値）。
 - 文字の色は、危険の項目とそれ以外で、どちらか一方のクラスだけを付ける。`text-text` と `text-danger` を両方付けると、どちらが効くかはクラスの順ではなく CSS の生成順で決まる。
 - 項目とメニューに付けた `outline-none` は、キーボードで移動中の項目を面の明度（`data-focused:bg-surface-3`）で示すためのものである（select.md と同じ）。
 - `MenuSection` の中の `Header` は、まとまりの見出しとして読み上げられる。見出しが要らないまとまりでは省いてよい。

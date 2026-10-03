@@ -57,8 +57,8 @@ const overlayClass = [
 const modalClass = [
   "w-full max-w-md rounded-lg border border-line bg-surface-2 shadow-float",
   "transition-[opacity,translate] duration-(--duration-base) ease-out-quint",
-  "data-entering:translate-y-2 data-entering:opacity-0",
-  "data-exiting:translate-y-2 data-exiting:opacity-0 data-exiting:duration-(--duration-fast)",
+  "data-entering:opacity-0 motion-safe:data-entering:translate-y-2",
+  "data-exiting:opacity-0 motion-safe:data-exiting:translate-y-2 data-exiting:duration-(--duration-fast)",
   "motion-reduce:transition-opacity motion-reduce:duration-(--duration-fast)",
 ].join(" ");
 
@@ -90,7 +90,7 @@ export function RenameDialog({ current, onRename }: { current: string; onRename:
                   <Button slot="close" aria-label="閉じる" className={`absolute top-3 right-3 grid size-8 select-none place-items-center rounded-md text-text-muted data-hovered:bg-surface-3 data-hovered:text-text ${ring}`}>
                     <Icon icon="ph:x" aria-hidden className="size-4" />
                   </Button>
-                  <Tooltip offset={6} className="rounded-sm border border-line bg-surface-3 px-2 py-1 text-xs text-text shadow-float">
+                  <Tooltip offset={6} className="rounded-sm border border-line bg-surface-2 px-2 py-1 text-xs text-text shadow-float">
                     閉じる
                   </Tooltip>
                 </TooltipTrigger>
@@ -117,6 +117,7 @@ export function RenameDialog({ current, onRename }: { current: string; onRename:
 ```
 
 - `Dialog` 自体はフォーカスを受けるが、中の要素にフォーカスが移るため、`Dialog` にはフォーカスリングを付けず `outline-hidden` にしている。Tailwind v4 の `outline-hidden` は、強制カラーモード（Windows のハイコントラスト）では線を残す。フォーカスリングを出す要素には `outline-none` を書かない。
+- 移動のクラスには `motion-safe:` を付け、動きを減らす設定のときは 8px ずれた位置から始まらないようにしている。`motion-reduce:transition-opacity` だけでは、移動が一瞬で飛ぶ。
 - `slot="close"` のボタンは、`Dialog` の中に置くと React Aria がダイアログを閉じる動作をつなぐ。閉じるボタンとキャンセルのボタンの両方に使える。
 - 入力欄に `autoFocus` を付けると、開いた直後に入力を始められる。付けない場合、React Aria はダイアログ自体にフォーカスを置く。
 
@@ -135,8 +136,8 @@ const overlayClass = [
 const modalClass = [
   "w-full max-w-md rounded-lg border border-line bg-surface-2 shadow-float",
   "transition-[opacity,translate] duration-(--duration-base) ease-out-quint",
-  "data-entering:translate-y-2 data-entering:opacity-0",
-  "data-exiting:translate-y-2 data-exiting:opacity-0 data-exiting:duration-(--duration-fast)",
+  "data-entering:opacity-0 motion-safe:data-entering:translate-y-2",
+  "data-exiting:opacity-0 motion-safe:data-exiting:translate-y-2 data-exiting:duration-(--duration-fast)",
   "motion-reduce:transition-opacity motion-reduce:duration-(--duration-fast)",
 ].join(" ");
 
