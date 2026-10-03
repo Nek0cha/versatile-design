@@ -6,6 +6,7 @@
     "node": ">=22"
   },
   "scripts": {
+    "check:skills": "node tools/check-skills.mjs",
     "test": "node --test \"tests/**/*.test.mjs\""
   },
   "devDependencies": {
