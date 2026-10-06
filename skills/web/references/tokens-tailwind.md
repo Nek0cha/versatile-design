@@ -67,7 +67,7 @@ Tailwind v4 では、`@theme` に書いた変数名からクラス名が作ら�
 | `--font-body` | 本文、UI の文字 |
 | `--font-mono` | 桁を揃える数字、コード、ログ、ID。ラベルや見出しには使わない（`../design-core/references/anti-patterns.md` の X17） |
 
-`font-family` は欧文、和文、総称ファミリーの順に書く（`typography-ja.md` の2.1節）。下の定義例の書体は、組み合わせ表の S1 を例にしたものである。
+`font-family` は欧文、和文、総称ファミリーの順に書く（`typography-ja.md` の2.1節）。下の定義例の書体は、組み合わせ表の S1 を例にしたものである。Fontshare と自前配信の書体の読み込み方は `../design-core/references/typography-ja.md` の2.2節に従う。
 
 ### イージングと所要時間
 

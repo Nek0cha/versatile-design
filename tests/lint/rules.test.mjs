@@ -289,6 +289,33 @@ test('no-reduced-motion accepts tailwind motion-reduce and motion-safe variants'
   assert.equal(rule.check([anim, { path: 'b.tsx', source: '<div className="motion-reduce:animate-none" />' }]).length, 0);
   assert.equal(rule.check([anim, { path: 'b.tsx', source: '<div className="motion-safe:animate-fade" />' }]).length, 0);
 });
+test('no-reduced-motion detects three imports', () => {
+  const [rule] = projectRules;
+  const scene = { path: 'Scene.tsx', source: 'import * as THREE from "three";\n' };
+  assert.equal(rule.check([scene]).length, 1);
+  assert.equal(rule.check([{ path: 'a.tsx', source: "import { Mesh } from 'three';" }]).length, 1);
+  assert.equal(
+    rule.check([scene, { path: 'b.tsx', source: 'matchMedia("(prefers-reduced-motion: reduce)")' }]).length,
+    0,
+  );
+  // three を含む別名のパッケージやパスは対象にしない
+  assert.equal(rule.check([{ path: 'a.tsx', source: 'import x from "three-stdlib-types";' }]).length, 0);
+});
+
+test('no-reduced-motion detects dynamic and side-effect three imports', () => {
+  const [rule] = projectRules;
+  assert.equal(rule.check([{ path: 'a.tsx', source: 'const THREE = await import("three");' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.tsx', source: "import( 'three' ).then(init);" }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.ts', source: 'import "three";' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.ts', source: 'import { OrbitControls } from "three/addons/controls/OrbitControls.js";' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.tsx', source: 'await import("three-stdlib-types");' }]).length, 0);
+});
+
+test('no-reduced-motion detects requestAnimationFrame loops', () => {
+  const [rule] = projectRules;
+  assert.equal(rule.check([{ path: 'a.ts', source: 'requestAnimationFrame(loop);' }]).length, 1);
+});
+
 test('text-arrow flags arrow entities in buttons and links', () => {
   for (const e of ['&rarr;', '&raquo;', '&laquo;', '&larr;', '&uarr;', '&darr;', '&rsaquo;', '&lsaquo;']) {
     assert.equal(hits(`<a href="/x">次へ ${e}</a>`, 'x.html', 'text-arrow').length, 1, e);

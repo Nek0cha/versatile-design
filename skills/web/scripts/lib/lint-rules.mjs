@@ -511,7 +511,9 @@ export const rules = [
 // ---------------------------------------------------------------------------
 // プロジェクト全体を見るルール
 
-const MOTION_USE = /@keyframes|(?<![\w-])animation\s*:|motion\/react|\bgsap\b/;
+// three は静的な import、動的な import()、副作用だけの import、three/addons などの下位のパスをすべて拾う
+const MOTION_USE =
+  /@keyframes|(?<![\w-])animation\s*:|motion\/react|\bgsap\b|(?:\bfrom\s*|\bimport\s*\(\s*|\bimport\s+)["']three(?:\/[^"']*)?["']|\brequestAnimationFrame\s*\(/;
 const MOTION_GUARD = /prefers-reduced-motion|useReducedMotion|reducedMotion|(?<![\w-])motion-(?:reduce|safe):/;
 
 const noReducedMotion = {

@@ -12,6 +12,7 @@ Claude に「AI 感のない」プロ水準のデザインを出力させるた�
 | `web` | Web のサイト系とアプリ系の UI。React ＋ Tailwind CSS（v4）＋ React Aria Components。ファビコンの作り方、禁止パターンの自動チェック、スクリーンショットの撮影スクリプトを含む |
 
 - `web` は最初に `design-core` を読む。2つは必ず組で使う。
+- サイト系の依頼では、作る前にコンセプトの案が 2〜3 個と技術スタックの提案が出て、選んでから作られる。「おまかせで」と書けば、選ばずに進む。
 - キャッチコピー、見出し、本文は、`web` の `references/copy.md` の書き方に従って、依頼に書かれた事実から書かれる。依頼の情報が足りない場所と、ボタンなどの短い文言は、ダミーと分かる形（「ここに見出し」など）で置かれる。
 - このスキル集は、frontend-design スキルと併用しない前提で作っている。
 
@@ -51,7 +52,7 @@ cp -r skills/design-core skills/web <プロジェクト>/.claude/skills/
 ### 必要なもの
 
 - Node.js 22 以上（`web` のスクリプトの実行に使う）
-- 生成物は React と Tailwind CSS v4 を前提にする。React Aria Components、Iconify（`@iconify/react`）、Motion、GSAP などは、生成するプロジェクトに必要に応じて導入される。
+- 生成物は React と Tailwind CSS v4 を前提にする。フレームワーク（Vite、Astro、React Router、Next.js）は依頼の規模に合わせて提案され、利用者が選ぶ。React Aria Components、Iconify（`@iconify/react`）、Motion、GSAP、three などは、生成するプロジェクトに必要に応じて導入される。
 
 ## スクリーンショット用の playwright の導入
 
@@ -117,6 +118,8 @@ npm run check:skills   # SKILL.md の frontmatter、参照先のパス、実例�
 npm run check:recipes  # 部品のレシピのコード例を lint と型検査にかける
 claude plugin validate .   # プラグインと配布元の設定ファイル（.claude-plugin/）を検査する
 ```
+
+- WSL で `npm` を実行すると Windows 側の npm が呼ばれる場合がある。その場合は、WSL 側に Node.js（npm を含む）を入れるか、`pnpm dlx npm@11 <コマンド>` で実行する。テストと検査は `node --test "tests/**/*.test.mjs"`、`node tools/check-skills.mjs`、`node tools/check-recipes.mjs` で直接実行してもよい。
 
 - `npm test` のスクリーンショットのテストは、ブラウザを起動できない環境ではスキップされる。手元の Chromium を使う場合は `CHROMIUM_PATH=<パス> npm test` とする。
 - `npm run check:skills` で実例名の匿名化を検査するには、禁止語を1行に1つ書いたファイルを環境変数 `REFERENCE_DENYLIST` で渡す（例：`REFERENCE_DENYLIST=<ファイル> npm run check:skills`）。対象は `skills/`、`docs/`、`README.md` である。指定がなければ匿名化の検査は省略され、指定したファイルが存在しないか空の場合は警告を出して省略する。禁止語のファイルはリポジトリに含めない。

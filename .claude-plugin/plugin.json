@@ -1,5 +1,6 @@
 {
   "name": "versatile-design",
+  "version": "1.0.0",
   "description": "Claude に AI 感のないプロ水準のデザインを出力させるスキル集（design-core と web）。",
   "author": {
     "name": "Nek0cha"
