@@ -271,10 +271,12 @@ export function DistortImage({ src, alt }: { src: string; alt: string }) {
       render();
     };
     const enter = () => {
+      gsap.killTweensOf(uniforms.uHover);
       gsap.ticker.add(tick);
       gsap.to(uniforms.uHover, { value: 1, duration: 0.6, ease: "outQuint" });
     };
     const leave = () => {
+      gsap.killTweensOf(uniforms.uHover);
       gsap.to(uniforms.uHover, { value: 0, duration: 0.4, ease: "outQuint", onComplete: () => gsap.ticker.remove(tick) });
     };
     el.addEventListener("pointerenter", enter);

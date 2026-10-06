@@ -361,6 +361,8 @@ export function VelocityMarquee({ text }: { text: string }) {
       mm.add("(prefers-reduced-motion: no-preference)", () => {
         // 流れ続ける帯は一定の速さで動くことに意味がある（X13 の理由）
         const loop = gsap.to(".js-marquee-track", { xPercent: -50, duration: 40, ease: "none", repeat: -1 });
+        // 逆向きに流しても先頭で止まらないよう、再生位置を十分に先へ進めておく
+        loop.totalTime(loop.duration() * 1000);
         ScrollTrigger.create({
           onUpdate(self) {
             // 速さは 1〜6 倍の範囲で上げ、向きはスクロールの向きに合わせる。止まると元の速さに戻る
