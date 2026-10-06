@@ -48,7 +48,7 @@
 |---|---|---|
 | CSS の `transition`（Tailwind のクラス） | ホバー、押下、フォーカスの色や不透明度の変化。アプリ系とサイト系の両方 | 出入りする要素（DOM から消える要素）の退場、並び替え |
 | **Motion**（`motion/react`） | アプリ系の細かな動き。メニューの開閉、トグル、並び替え、画面遷移、出入りする要素 | スクロール位置に連動する演出、文字単位の演出 |
-| **GSAP**（ScrollTrigger、SplitText） | サイト系のスクロール演出、文字単位の演出、時間軸で組み立てる登場 | アプリ系の部品の開閉（状態と動きがずれやすい） |
+| **GSAP**（ScrollTrigger、SplitText） | サイト系のスクロール演出、文字単位の演出、時間軸で組み立てる登場、スクロールの速さに反応する帯、ページの読み込みの演出 | アプリ系の部品の開閉（状態と動きがずれやすい） |
 | **Lenis** | サイト系の慣性スクロール。スクロール演出が多く、スクロールの手触りそのものを印象の一部にしたい場合だけ | アプリ系。長い文章を読むページ。動きを減らす設定のとき |
 
 - 1つの要素を2つのライブラリで同時に動かさない。互いの値を上書きし合う。
@@ -341,6 +341,104 @@ export function StorySection() {
 - 和文の見出しは文字単位（`chars`）で分ける。欧文の見出しは単語単位（`words`）の方が読みやすい場合がある。
 - `ease: "none"` は `linear` と同じであり、スクロール量に直接つなぐ動き（`scrub`）にだけ使う。手触りは `scrub` に渡す追従の秒数で調整する。時間で動く演出には使わない（X13）。
 - 登場は `once: true` にして、スクロールを戻すたびに繰り返さない。
+
+### スクロールの速さに反応する帯
+
+流れ続ける帯（2節）を、スクロールの速さに合わせて一時的に速くし、向きも合わせる。帯が記憶のフックである場合だけ使う。帯そのものは一定の速さで動くことに意味があるため、ベースの動きは `linear` のままにする。
+
+```tsx
+"use client";
+import { useRef } from "react";
+import { gsap, ScrollTrigger, useGSAP } from "./gsap-setup";
+
+export function VelocityMarquee({ text }: { text: string }) {
+  const root = useRef<HTMLDivElement>(null);
+
+  useGSAP(
+    () => {
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // 流れ続ける帯は一定の速さで動くことに意味がある（X13 の理由）
+        const loop = gsap.to(".js-marquee-track", { xPercent: -50, duration: 40, ease: "none", repeat: -1 });
+        ScrollTrigger.create({
+          onUpdate(self) {
+            // 速さは 1〜6 倍の範囲で上げ、向きはスクロールの向きに合わせる。止まると元の速さに戻る
+            const speed = gsap.utils.clamp(1, 6, Math.abs(self.getVelocity()) / 300);
+            gsap.killTweensOf(loop);
+            gsap.to(loop, { timeScale: speed * self.direction, duration: 0.3, ease: "outQuint" });
+            gsap.to(loop, { timeScale: self.direction, duration: 1.2, delay: 0.3, ease: "outQuint" });
+          },
+        });
+      });
+      return () => mm.revert();
+    },
+    { scope: root },
+  );
+
+  return (
+    <div ref={root} className="overflow-hidden border-y border-line py-4">
+      <span className="sr-only">{text}</span>
+      <div className="js-marquee-track flex w-max gap-12 font-display text-5xl text-text-strong" aria-hidden="true">
+        <span>{text}</span>
+        <span>{text}</span>
+      </div>
+    </div>
+  );
+}
+```
+
+- 動きを減らす設定のときは帯を動かさない（流れ続ける帯の決まりと同じ）。
+- 帯の文字は飾りとして `aria-hidden` にし、同じ内容を `sr-only` の文字で1回だけ読ませる。
+- 観察では、名前や標語を流れ続ける帯にし、スクロールの向きに合わせて流れる向きを変える型が見られた（`references/observations/site.md` の傾向 13）。
+
+### ページの読み込みの演出
+
+最初の画面を出す前に、短い演出を1回だけ入れる。待たせる時間になるため、全体で 1200ms 以内にし、同じ訪問の2ページ目以降では出さない。
+
+```tsx
+"use client";
+import { useRef, useState } from "react";
+import { gsap, useGSAP } from "./gsap-setup";
+
+export function Intro({ name }: { name: string }) {
+  const root = useRef<HTMLDivElement>(null);
+  const [done, setDone] = useState(() => typeof window !== "undefined" && sessionStorage.getItem("intro") === "1");
+
+  useGSAP(
+    () => {
+      if (done) return;
+      const finish = () => {
+        sessionStorage.setItem("intro", "1");
+        setDone(true);
+      };
+      const mm = gsap.matchMedia();
+      mm.add("(prefers-reduced-motion: no-preference)", () => {
+        gsap.timeline({ onComplete: finish })
+          .from(".js-intro-name", { yPercent: 100, duration: 0.6, ease: "outQuint" })
+          .to(root.current, { clipPath: "inset(0 0 100% 0)", duration: 0.6, ease: "inOutQuart" }, "+=0.1");
+      });
+      mm.add("(prefers-reduced-motion: reduce)", () => {
+        gsap.to(root.current, { opacity: 0, duration: 0.12, ease: "outQuint", onComplete: finish });
+      });
+      return () => mm.revert();
+    },
+    { scope: root, dependencies: [done] },
+  );
+
+  if (done) return null;
+  return (
+    <div ref={root} className="fixed inset-0 z-50 grid place-items-center bg-surface-1" aria-hidden="true">
+      <p className="overflow-hidden font-display text-6xl text-text-strong">
+        <span className="js-intro-name block">{name}</span>
+      </p>
+    </div>
+  );
+}
+```
+
+- 数字が 0 から 100 まで増える読み込みの表示を、実際の読み込みと無関係に出さない。進んでいないものを進んでいるように見せることになる。
+- 演出の層は `aria-hidden` にし、ページの内容は裏で最初から読める状態にしておく。
+- 音声を使う体験では、この位置に「音声ありで入る」と「音声なしで入る」の2つを並べた入口の画面を置いてよい（`references/observations/site.md` の傾向 13）。音声を使わないサイトに入口の画面を足さない。
 
 ### サイト系のメニューの全画面の開閉
 
