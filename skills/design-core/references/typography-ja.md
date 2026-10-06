@@ -81,7 +81,9 @@
 <link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500&f[]=erode@500&display=swap" />
 ```
 
-- Fontshare の書体（ITF Free Font License）は、個人・商用とも無料で Web に使える。ただし、フォントファイルの再配布と自前の配信は認められていない。ファイルをダウンロードしてプロジェクトに置かず、必ず上の配信の URL から読み込む。
+- Fontshare の書体（ITF Free Font License 2.0）は、個人・商用とも無料で Web に使える。ライセンスは、自分のサイトやアプリのための自前の配信（`@font-face`）も認めている。それでも、この資料では上の配信の URL から読み込む形を基本にする。ファイルをプロジェクトに置かずに済むためである。
+- 自前で配信する場合は、ライセンスの次の制限を守る。ダウンロードしたファイルを変えない（サブセット化や woff2 への変換もしない）。公開のリポジトリにファイルを含めない。利用者がフォントを選んで使えるサービス（テンプレートの編集機能など）に組み込まない。
+- Fontshare には SIL Open Font License の書体も混ざっている。その書体は、次の「OFL のフォントの自前配信」と同じ扱いでよい。
 - `font-family` に書く名前は、配信の CSS の `font-family` の値（例：`"Satoshi"`、`"General Sans"`）に合わせる。
 
 #### OFL のフォントの自前配信
