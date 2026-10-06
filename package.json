@@ -12,6 +12,7 @@
   },
   "devDependencies": {
     "@gsap/react": "2.1.2",
+    "@iconify-icons/ph": "2.0.0",
     "@iconify/react": "6.0.2",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
