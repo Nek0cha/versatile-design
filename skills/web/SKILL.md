@@ -77,6 +77,7 @@ observations は、mode のファイルの原則と数値の根拠となる観�
 | アイコン | `references/components/icons.md` |
 
 - 動きを付けるときは `references/motion-web.md` を読む。アプリ系は Motion、サイト系は GSAP（必要なら Lenis）を使い、`prefers-reduced-motion` に必ず対応する。
+- コンセプトの記憶のフックが WebGL の演出である場合だけ、`references/webgl.md` を読む。`three` だけを使い、同ファイルの1節の決まりをすべて守る。
 - 利用者が渡していないキャッチコピー、サブコピー、セクションの見出し、本文は、`references/copy.md` に従って依頼の事実から書く。書けない場所と、ボタンなどの短い文言は、`../design-core/SKILL.md` の5節に従ってダミーと分かる仮の文章にする。
 - ファビコンを必ず一緒に作る。`references/favicon.md` に従い、コンセプトとトークンの色から `favicon.svg` を作って指定し、雛形のファビコンと `<title>` を置き換える。
 - 生成物に作業用のファイル（スクリーンショットなど）を含めない。

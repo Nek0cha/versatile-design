@@ -50,6 +50,7 @@
 | **Motion**（`motion/react`） | アプリ系の細かな動き。メニューの開閉、トグル、並び替え、画面遷移、出入りする要素 | スクロール位置に連動する演出、文字単位の演出 |
 | **GSAP**（ScrollTrigger、SplitText） | サイト系のスクロール演出、文字単位の演出、時間軸で組み立てる登場、スクロールの速さに反応する帯、ページの読み込みの演出 | アプリ系の部品の開閉（状態と動きがずれやすい） |
 | **Lenis** | サイト系の慣性スクロール。スクロール演出が多く、スクロールの手触りそのものを印象の一部にしたい場合だけ | アプリ系。長い文章を読むページ。動きを減らす設定のとき |
+| **Three.js**（`three`） | サイト系で、記憶のフックが WebGL の演出である場合だけ。書き方は `references/webgl.md` | アプリ系。フックでない装飾。React Three Fiber と drei は使わない |
 
 - 1つの要素を2つのライブラリで同時に動かさない。互いの値を上書きし合う。
 - アプリ系の画面では、原則として CSS と Motion だけを使う。サイト系の画面では、CSS と GSAP を基本にし、出入りする要素がある場合だけ Motion を足す。
@@ -528,6 +529,7 @@ export function SmoothScroll() {
 | Motion | `MotionConfig reducedMotion="user"` をアプリの外側に置く。移動の距離などを自分で変える場合は `useReducedMotion()` を読む（3節） |
 | GSAP | `gsap.matchMedia()` で `(prefers-reduced-motion: no-preference)` と `(prefers-reduced-motion: reduce)` の組み立てを分ける（4節） |
 | Lenis | 設定が有効なら作らない（5節） |
+| Three.js | 設定が有効なら1フレームだけ描いて止める（`references/webgl.md` の1節） |
 
 設定が有効なときも、状態の変化（開いた、閉じた、選択した）は不透明度の短い変化で伝える。動きを完全に消すと、何が起きたか分からなくなる場合がある。
 
