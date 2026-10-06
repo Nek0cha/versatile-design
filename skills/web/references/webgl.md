@@ -89,6 +89,7 @@ void main() {
   float n = noise(vUv * 3.0 + vec2(uTime * 0.04, uProgress * 1.5));
   float edge = smoothstep(0.42, 0.58, n + (vUv.y - 0.5) * 0.8 - uProgress * 0.4);
   gl_FragColor = vec4(mix(uColorA, uColorB, edge), 1.0);
+  #include <colorspace_fragment>
 }`;
 
 export function ShaderPlane({ className = "" }: { className?: string }) {
@@ -133,8 +134,11 @@ export function ShaderPlane({ className = "" }: { className?: string }) {
     const resizeObserver = new ResizeObserver(resize);
     resizeObserver.observe(el);
 
+    let tween: gsap.core.Tween | undefined;
+    let visibility: IntersectionObserver | undefined;
     const onLost = (e: Event) => {
       e.preventDefault();
+      visibility?.disconnect();
       gsap.ticker.remove(tick);
       renderer.domElement.remove();
       setFailed(true);
@@ -145,8 +149,6 @@ export function ShaderPlane({ className = "" }: { className?: string }) {
       uniforms.uTime.value = time;
       render();
     };
-    let tween: gsap.core.Tween | undefined;
-    let visibility: IntersectionObserver | undefined;
     if (!reduce) {
       tween = gsap.to(uniforms.uProgress, {
         value: 1,
@@ -177,7 +179,7 @@ export function ShaderPlane({ className = "" }: { className?: string }) {
 
   return (
     <div ref={host} className={`absolute inset-0 -z-10 ${className}`}>
-      {failed && <div className="size-full bg-surface-1" />}
+      {failed && <div className="size-full bg-surface-0" />}
     </div>
   );
 }
@@ -185,7 +187,9 @@ export function ShaderPlane({ className = "" }: { className?: string }) {
 
 - 動きを減らす設定のときは、`ResizeObserver` の最初の呼び出しで1フレームだけ描き、ticker にもスクロールにも登録しない。
 - 置く側の要素（最初の画面のセクション）には `relative isolate` を付け、面が `-z-10` でその背後に収まるようにする。
-- 代わりの表示は、面の2色のうち背景側の色にする。画像を用意できる場合は、面を止めた状態の静止画にしてもよい。
+- 代わりの表示は、面の2色のうち背景側の色（`surface-0`）にする。画像を用意できる場合は、面を止めた状態の静止画にしてもよい。
+- この例は、最初の画面のセクションの中に面を置く形である。ページの複数の場所で同じ面を使う場合は、外側の要素のクラスを `fixed inset-0 -z-10` に変え、ページに1つだけ置く（冒頭の決まり）。
+- `tokenColor()` は sRGB の値を線形の値に変えて渡す。`ShaderMaterial` のフラグメントシェーダーの最後には、必ず `#include <colorspace_fragment>` を書き、表示用の sRGB に戻す。書き忘れると、エラーは出ずに色がトークンより暗く沈む。
 - 色を3色以上にしない。虹色のグラデーションの面は X22 に当たる。
 
 ## 4. 画像のゆがみと切り替え
@@ -218,6 +222,7 @@ void main() {
   uv.x += sin(uv.y * 12.0 + uTime * 2.0) * 0.015 * uHover;
   uv.y += cos(uv.x * 10.0 + uTime * 2.0) * 0.010 * uHover;
   gl_FragColor = texture2D(uTexture, uv);
+  #include <colorspace_fragment>
 }`;
 
 export function DistortImage({ src, alt }: { src: string; alt: string }) {
@@ -369,6 +374,7 @@ export function ParticleField() {
         void main() {
           if (length(gl_PointCoord - 0.5) > 0.5) discard;
           gl_FragColor = vec4(uColor, 0.8);
+          #include <colorspace_fragment>
         }`,
     });
     const points = new THREE.Points(geometry, material);
@@ -415,7 +421,7 @@ export function ParticleField() {
     };
   }, []);
 
-  return <div ref={host} className="relative h-[80vh]">{failed && <div className="size-full bg-surface-1" />}</div>;
+  return <div ref={host} className="relative h-[80vh]">{failed && <div className="size-full bg-surface-0" />}</div>;
 }
 ```
 

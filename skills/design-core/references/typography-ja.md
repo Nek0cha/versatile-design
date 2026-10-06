@@ -98,8 +98,14 @@
 }
 ```
 
-3. 最初の画面の見出しに使う書体は、`<link rel="preload" href="/fonts/…" as="font" crossorigin>` で先に読み込む。
-4. 和文の自前配信は見出しにだけ使う（調整欄）。
+3. 和文のフォントファイルは1つで数 MB ある（源暎こぶり明朝の ttf は約 8.5MB）。見出しで使う文字だけに絞った woff2 を作れる環境（Python の fonttools）があれば、`pyftsubset <ファイル> --text-file=<見出しの文字を並べたファイル> --flavor=woff2 --output-file=<名前>.woff2` で作り、それを使う。作れない場合は元のファイルのまま `font-display: swap` で読み込み、preload はしない。ファイルの大きさを報告に書く。
+4. 最初の画面の見出しに使う欧文の書体と、絞り込んだ和文の woff2 は、`<link rel="preload" href="/fonts/…" as="font" crossorigin>` で先に読み込む。
+5. 和文の自前配信は見出しにだけ使う（調整欄）。
+
+| 書体 | 配布元 |
+|---|---|
+| 源暎こぶり明朝 | 作者の配布ページ（`https://okoneya.jp/font/genei-koburimin.html`） |
+| Basteleur | Velvetyne（`https://velvetyne.fr/fonts/basteleur/`） |
 
 ### 2.3 欧文のサイズ補正
 
