@@ -302,6 +302,15 @@ test('no-reduced-motion detects three imports', () => {
   assert.equal(rule.check([{ path: 'a.tsx', source: 'import x from "three-stdlib-types";' }]).length, 0);
 });
 
+test('no-reduced-motion detects dynamic and side-effect three imports', () => {
+  const [rule] = projectRules;
+  assert.equal(rule.check([{ path: 'a.tsx', source: 'const THREE = await import("three");' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.tsx', source: "import( 'three' ).then(init);" }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.ts', source: 'import "three";' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.ts', source: 'import { OrbitControls } from "three/addons/controls/OrbitControls.js";' }]).length, 1);
+  assert.equal(rule.check([{ path: 'a.tsx', source: 'await import("three-stdlib-types");' }]).length, 0);
+});
+
 test('no-reduced-motion detects requestAnimationFrame loops', () => {
   const [rule] = projectRules;
   assert.equal(rule.check([{ path: 'a.ts', source: 'requestAnimationFrame(loop);' }]).length, 1);
