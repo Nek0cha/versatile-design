@@ -50,6 +50,8 @@
 |---|---|---|
 | Vite（`index.html` がある） | `public/favicon.svg`、`public/apple-touch-icon.png` | `index.html` の `<head>` に下の2行を書く |
 | Next.js（App Router） | `app/icon.svg`、`app/apple-icon.png` | 書かなくてよい（ファイルを置けば自動で指定される） |
+| Astro | `public/favicon.svg`、`public/apple-touch-icon.png` | 共通のレイアウトの `<head>` に、Vite と同じ2行を書く |
+| React Router（フレームワークモード） | `public/favicon.svg`、`public/apple-touch-icon.png` | `app/root.tsx` の `links` 関数に `{ rel: "icon", href: "/favicon.svg", type: "image/svg+xml" }` と `{ rel: "apple-touch-icon", href: "/apple-touch-icon.png" }` を足す |
 
 ```html
 <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
