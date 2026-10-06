@@ -511,7 +511,8 @@ export const rules = [
 // ---------------------------------------------------------------------------
 // プロジェクト全体を見るルール
 
-const MOTION_USE = /@keyframes|(?<![\w-])animation\s*:|motion\/react|\bgsap\b/;
+const MOTION_USE =
+  /@keyframes|(?<![\w-])animation\s*:|motion\/react|\bgsap\b|from\s+["']three["']|\brequestAnimationFrame\s*\(/;
 const MOTION_GUARD = /prefers-reduced-motion|useReducedMotion|reducedMotion|(?<![\w-])motion-(?:reduce|safe):/;
 
 const noReducedMotion = {
