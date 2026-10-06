@@ -216,68 +216,117 @@ precision highp float;
 uniform sampler2D uTexture;
 uniform float uHover;
 uniform float uTime;
+uniform vec2 uScale;
 varying vec2 vUv;
 void main() {
-  vec2 uv = vUv;
+  // object-cover と同じく、枠の縦横比に合わせて画像の中央を切り抜く
+  vec2 uv = (vUv - 0.5) * uScale + 0.5;
   uv.x += sin(uv.y * 12.0 + uTime * 2.0) * 0.015 * uHover;
   uv.y += cos(uv.x * 10.0 + uTime * 2.0) * 0.010 * uHover;
   gl_FragColor = texture2D(uTexture, uv);
   #include <colorspace_fragment>
 }`;
 
+// 枠と画像の縦横比から、object-cover と同じ切り抜きになる UV の倍率を出す
+function coverScale(box: DOMRect, img: HTMLImageElement): THREE.Vector2 {
+  const boxAspect = box.width / Math.max(box.height, 1);
+  const imageAspect = img.naturalWidth / Math.max(img.naturalHeight, 1);
+  return boxAspect > imageAspect
+    ? new THREE.Vector2(1, imageAspect / boxAspect)
+    : new THREE.Vector2(boxAspect / imageAspect, 1);
+}
+
 export function DistortImage({ src, alt }: { src: string; alt: string }) {
   const host = useRef<HTMLDivElement>(null);
-  const [ready, setReady] = useState(false);
+  const image = useRef<HTMLImageElement>(null);
+  const [active, setActive] = useState(false);
 
   useEffect(() => {
     const el = host.current;
-    if (!el) return;
+    const img = image.current;
+    if (!el || !img) return;
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    let renderer: THREE.WebGLRenderer;
-    try {
-      renderer = new THREE.WebGLRenderer({ alpha: true, powerPreference: "low-power" });
-    } catch {
-      return;
-    }
-    renderer.setPixelRatio(maxPixelRatio());
-    renderer.domElement.setAttribute("aria-hidden", "true");
-    renderer.domElement.className = "absolute inset-0 size-full";
-
-    const scene = new THREE.Scene();
-    const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
-    const geometry = new THREE.PlaneGeometry(2, 2);
-    const texture = new THREE.TextureLoader().load(src, () => {
-      el.appendChild(renderer.domElement);
-      setReady(true);
-      render();
-    });
-    texture.colorSpace = THREE.SRGBColorSpace;
-    const uniforms = { uTexture: { value: texture }, uHover: { value: 0 }, uTime: { value: 0 } };
-    const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
-    scene.add(new THREE.Mesh(geometry, material));
-
-    const render = () => renderer.render(scene, camera);
-    const resize = () => {
-      const { width, height } = el.getBoundingClientRect();
-      renderer.setSize(width, height, false);
-      render();
+    const uniforms = {
+      uTexture: { value: null as THREE.Texture | null },
+      uHover: { value: 0 },
+      uTime: { value: 0 },
+      uScale: { value: new THREE.Vector2(1, 1) },
     };
-    const resizeObserver = new ResizeObserver(resize);
-    resizeObserver.observe(el);
-
+    let stop: (() => void) | undefined;
+    let draw = () => {};
     const tick = (time: number) => {
       uniforms.uTime.value = time;
-      render();
+      draw();
     };
+
+    // 画像ごとに WebGL のコンテキストを持つと、画像が多いページでブラウザの上限（Chrome で 16 個ほど）を超える。
+    // そのため、ホバーしている間だけ作り、ゆがみが戻ったら捨てる
+    const start = (): boolean => {
+      if (stop) return true;
+      // 読み込みが終わっていない画像はテクスチャにできないため、元の <img> のままにする
+      if (!img.complete || img.naturalWidth === 0) return false;
+      let renderer: THREE.WebGLRenderer;
+      try {
+        renderer = new THREE.WebGLRenderer({ alpha: true, powerPreference: "low-power" });
+      } catch {
+        return false;
+      }
+      const box = el.getBoundingClientRect();
+      renderer.setPixelRatio(maxPixelRatio());
+      renderer.setSize(box.width, box.height, false);
+      renderer.domElement.setAttribute("aria-hidden", "true");
+      renderer.domElement.className = "absolute inset-0 size-full";
+
+      const scene = new THREE.Scene();
+      const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1);
+      const geometry = new THREE.PlaneGeometry(2, 2);
+      // 表示済みの <img> をそのままテクスチャにする。別に読み込まないため、読み込みと片付けがぶつからない
+      const texture = new THREE.Texture(img);
+      texture.colorSpace = THREE.SRGBColorSpace;
+      texture.needsUpdate = true;
+      uniforms.uTexture.value = texture;
+      uniforms.uScale.value = coverScale(box, img);
+      const material = new THREE.ShaderMaterial({ vertexShader, fragmentShader, uniforms });
+      scene.add(new THREE.Mesh(geometry, material));
+      draw = () => renderer.render(scene, camera);
+
+      const onLost = (e: Event) => {
+        e.preventDefault();
+        stop?.();
+      };
+      renderer.domElement.addEventListener("webglcontextlost", onLost);
+      el.appendChild(renderer.domElement);
+      draw();
+      setActive(true);
+
+      stop = () => {
+        stop = undefined;
+        draw = () => {};
+        gsap.ticker.remove(tick);
+        gsap.killTweensOf(uniforms.uHover);
+        uniforms.uHover.value = 0;
+        renderer.domElement.removeEventListener("webglcontextlost", onLost);
+        geometry.dispose();
+        material.dispose();
+        texture.dispose();
+        renderer.dispose();
+        renderer.domElement.remove();
+        setActive(false);
+      };
+      return true;
+    };
+
     const enter = () => {
+      if (!start()) return;
       gsap.killTweensOf(uniforms.uHover);
       gsap.ticker.add(tick);
       gsap.to(uniforms.uHover, { value: 1, duration: 0.6, ease: "outQuint" });
     };
     const leave = () => {
+      if (!stop) return;
       gsap.killTweensOf(uniforms.uHover);
-      gsap.to(uniforms.uHover, { value: 0, duration: 0.4, ease: "outQuint", onComplete: () => gsap.ticker.remove(tick) });
+      gsap.to(uniforms.uHover, { value: 0, duration: 0.4, ease: "outQuint", onComplete: () => stop?.() });
     };
     el.addEventListener("pointerenter", enter);
     el.addEventListener("pointerleave", leave);
@@ -285,29 +334,23 @@ export function DistortImage({ src, alt }: { src: string; alt: string }) {
     return () => {
       el.removeEventListener("pointerenter", enter);
       el.removeEventListener("pointerleave", leave);
-      gsap.ticker.remove(tick);
-      gsap.killTweensOf(uniforms.uHover);
-      resizeObserver.disconnect();
-      geometry.dispose();
-      material.dispose();
-      texture.dispose();
-      renderer.dispose();
-      renderer.domElement.remove();
+      stop?.();
     };
   }, [src]);
 
   return (
     <div ref={host} className="relative aspect-[4/3] overflow-hidden rounded-md">
-      <img className={`size-full object-cover ${ready ? "invisible" : ""}`} src={src} alt={alt} />
+      <img ref={image} className={`size-full object-cover ${active ? "invisible" : ""}`} src={src} alt={alt} />
     </div>
   );
 }
 ```
 
 - 元の `<img>` は常に DOM に残し、`alt` で内容を伝える。WebGL の準備ができたときだけ見た目を canvas に切り替える（`invisible` は場所と読み上げを残したまま見えなくする）。
-- 動きを減らす設定のとき、WebGL が使えないとき、テクスチャの読み込み前は、元の `<img>` がそのまま表示される。
-- 描画は、ホバーしている間とゆがみが戻るまでの間だけ行う。
-- 画像は同じオリジンか、CORS を許可した配信元に置く。許可がないとテクスチャを読めない。
+- 動きを減らす設定のとき、WebGL が使えないとき、画像の読み込みが終わる前、コンテキストを失ったときは、元の `<img>` がそのまま表示される。
+- WebGL のコンテキストと描画は、ホバーしている間とゆがみが戻るまでの間だけ持つ。同時に存在する canvas は多くても2つ（離れた画像と、次にホバーした画像）であり、冒頭の「canvas は1つ」の決まりの例外とする。
+- テクスチャは表示済みの `<img>` から作るため、画像を二重に読み込まない。
+- 画像は同じオリジンに置く。別のオリジンから配信する場合は、配信元で CORS を許可し、`<img>` に `crossOrigin="anonymous"` を付ける。どちらもないとテクスチャを作れない。
 
 ## 5. 粒子と線
 
@@ -395,6 +438,15 @@ export function ParticleField() {
 
     let tween: gsap.core.Tween | undefined;
     let visibility: IntersectionObserver | undefined;
+    const onLost = (e: Event) => {
+      e.preventDefault();
+      visibility?.disconnect();
+      gsap.ticker.remove(render);
+      renderer.domElement.remove();
+      setFailed(true);
+    };
+    renderer.domElement.addEventListener("webglcontextlost", onLost);
+
     if (!reduce) {
       const progress = material.uniforms.uProgress as { value: number };
       tween = gsap.to(progress, {
@@ -416,6 +468,7 @@ export function ParticleField() {
       tween?.scrollTrigger?.kill();
       tween?.kill();
       resizeObserver.disconnect();
+      renderer.domElement.removeEventListener("webglcontextlost", onLost);
       geometry.dispose();
       material.dispose();
       renderer.dispose();
