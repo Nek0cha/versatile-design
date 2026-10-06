@@ -2,7 +2,9 @@
 
 トークンを決める段階で読む。日本語が中心で英語が混ざる画面のために、和文フォントと欧文フォントの組み合わせを印象ごとに並べる。ユーザーの調整欄の「好きなフォント」に指定があれば、そちらを優先する。
 
-ここに載せるフォントは、すべて Google Fonts で配信されている。表のウェイトも配信されていることを確かめてある。
+ここに載せるフォントは、Google Fonts、Fontshare、OFL（SIL Open Font License）で配られているフォントの自前配信、の3つの配信元のどれかから使える。表の「配信元」の列で区別し、読み込み方は2.2節に従う。表のウェイトは配信されていることを確かめてある。有料のフォントは載せない。
+
+観察したサイト系の実例では、10件中9件が見出しの書体を Google Fonts 以外から読み込み、大見出しは太さ 350〜450 の細めの書体を大きく置いて字間を詰める組み方が多かった（`../web/references/observations/site.md` の傾向 14、15）。各印象の表の末尾の組（S4、P4、F4、B4、W3、E4）は、この傾向をもとに Fontshare と OFL の書体を取り入れたものである。
 
 ## スキル作者の調整欄
 
@@ -20,12 +22,17 @@
 | 表にない書体を使う場合の本文の字間・行間 | 和文ゴシック 0.04em／1.8、和文明朝 0.06em／1.9、欧文 0em／1.55 |
 | 欧文のサイズ補正 | 既定では補正しない。補正する場合は 90〜110% の範囲 |
 | 主役にしない書体 | Noto Sans JP 単独、Inter、Roboto、Poppins、Arial、Helvetica、system-ui（代替として後ろに置くのはよい） |
+| 印象を決めきれない場合の配信元 | Google Fonts（読み込みが最も簡単なため） |
+| 和文の自前配信 | 見出しにだけ使う。本文の和文は Google Fonts から読み込む（和文のフォントファイルは1ウェイトで数 MB あり、本文に使うと最初の表示が遅れる） |
 
 組み合わせを追加するときは次の手順に従う。
 
 1. 印象を1つ決め、その節の表の末尾に続きの記号（例：S4、P4）で行を足す。記号は振り直さない。報告やユーザーの調整欄から記号で参照されるためである。
 2. フォント表と字間・行間の表の両方に行を足す。字間・行間のない組は、モデルが毎回値を推測することになる。
-3. 追加する前に、フォント名とウェイトが Google Fonts で配信されていることを確かめる。`https://fonts.googleapis.com/css2?family=<名前の空白を+に置換>:wght@<ウェイト>` が 200 を返せば配信されている。存在しないウェイトは 400 を返す。
+3. 追加する前に、配信元ごとに次を確かめる。
+   - Google Fonts：`https://fonts.googleapis.com/css2?family=<名前の空白を+に置換>:wght@<ウェイト>` が 200 を返せば配信されている。存在しないウェイトは 400 を返す。
+   - Fontshare：`https://api.fontshare.com/v2/css?f[]=<スラッグ>@<ウェイト>&display=swap` が 200 を返し、CSS に `font-weight: <ウェイト>` が含まれれば配信されている。存在しないウェイトは CSS から黙って外される。
+   - OFL の自前配信：配布元でライセンスが SIL Open Font License であることと、使うウェイトのファイルがあることを確かめる。
 4. 主役にしない書体（上の表）を、見出しや本文の先頭に置く組は載せない。
 
 ---
@@ -59,10 +66,40 @@
 
 ### 2.2 読み込み
 
+#### Google Fonts
+
 - Google Fonts の URL には、表に書いたウェイトだけを指定し、`display=swap` を付ける。和文フォントは配信側で文字ごとに分割されているため、使った文字の分だけ読み込まれるが、ウェイトを1つ増やすごとに読み込みは増える。
 - 複数のフォントを1つの URL にまとめた場合、存在しないウェイトを指定したフォントは、エラーにならずに黙って外される。表にないウェイトを足すときは、調整欄の手順3と同じ方法で確かめる。
-- 1つのウェイトしかない書体（Dela Gothic One、Mochiy Pop One、Yusei Magic、DotGothic16、Gloock など）に `font-weight: 700` を指定しない。ブラウザが機械的に太らせた字形になる。`font-synthesis: none` を指定し、太らせた字形と傾けた字形が出ないようにする。
+- 1つのウェイトしかない書体（Dela Gothic One、Mochiy Pop One、Yusei Magic、DotGothic16、Gloock、源暎こぶり明朝など）に `font-weight: 700` を指定しない。ブラウザが機械的に太らせた字形になる。`font-synthesis: none` を指定し、太らせた字形と傾けた字形が出ないようにする。
 - 和文に斜体をかけない。和文には斜体の字形がなく、機械的に傾けた字形になる。強調は太さか書体の切り替えで行う。
+
+#### Fontshare
+
+`<head>` に1行で読み込む。ウェイトは表に書いたものだけを指定する。複数の書体は `f[]=` を並べて1つの URL にまとめる。
+
+```html
+<link rel="stylesheet" href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500&f[]=erode@500&display=swap" />
+```
+
+- Fontshare の書体（ITF Free Font License）は、個人・商用とも無料で Web に使える。ただし、フォントファイルの再配布と自前の配信は認められていない。ファイルをダウンロードしてプロジェクトに置かず、必ず上の配信の URL から読み込む。
+- `font-family` に書く名前は、配信の CSS の `font-family` の値（例：`"Satoshi"`、`"General Sans"`）に合わせる。
+
+#### OFL のフォントの自前配信
+
+1. 配布元からフォントファイルを取得し、生成するプロジェクトの `public/fonts/<書体名>/` に置く。woff2 がなければ ttf か otf をそのまま置いてよい。同じ場所にライセンスの文書（`OFL.txt`）を置く。
+2. `@font-face` を最初の CSS（`../web/references/stack.md` の2節）に書く。
+
+```css
+@font-face {
+  font-family: "GenEi Koburi Mincho";
+  src: url("/fonts/genei-koburimin/GenEiKoburiMin6-R.ttf") format("truetype");
+  font-weight: 400;
+  font-display: swap;
+}
+```
+
+3. 最初の画面の見出しに使う書体は、`<link rel="preload" href="/fonts/…" as="font" crossorigin>` で先に読み込む。
+4. 和文の自前配信は見出しにだけ使う（調整欄）。
 
 ### 2.3 欧文のサイズ補正
 
@@ -108,57 +145,64 @@
 
 ## 3. 組み合わせ表
 
-各組の書き方は「欧文フォント ウェイト ＋ 和文フォント ウェイト」である。`font-family` には欧文、和文の順で書く（2.1 節）。
+各組の書き方は「欧文フォント ウェイト ＋ 和文フォント ウェイト」である。`font-family` には欧文、和文の順で書く（2.1 節）。「配信元」の列は、見出しと本文に使う書体の配信元である（G：Google Fonts、F：Fontshare、O：OFL の自前配信）。
 
 ### 静か
 
 余白を多く取り、細めの線と控えめな字間の広さで落ち着きを出す。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| S1 | Instrument Serif 400 ＋ Shippori Mincho 500 | Instrument Sans 400・600 ＋ Zen Kaku Gothic New 400・700 | DM Mono 400 | 余白を広く取るサイト、作品や製品を静かに見せる紹介 |
-| S2 | Literata 600 ＋ BIZ UDPMincho 700 | Literata 400 ＋ BIZ UDPMincho 400 | Fragment Mono 400 | 長く読む読み物、文章が中心のサイト |
-| S3 | Hanken Grotesk 300 ＋ Murecho 300 | Hanken Grotesk 400・500 ＋ Murecho 400・500 | Spline Sans Mono 400 | 落ち着いたアプリ、設定の多い道具を冷たく見せたくない場合 |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| S1 | Instrument Serif 400 ＋ Shippori Mincho 500 | Instrument Sans 400・600 ＋ Zen Kaku Gothic New 400・700 | DM Mono 400 | G | 余白を広く取るサイト、作品や製品を静かに見せる紹介 |
+| S2 | Literata 600 ＋ BIZ UDPMincho 700 | Literata 400 ＋ BIZ UDPMincho 400 | Fragment Mono 400 | G | 長く読む読み物、文章が中心のサイト |
+| S3 | Hanken Grotesk 300 ＋ Murecho 300 | Hanken Grotesk 400・500 ＋ Murecho 400・500 | Spline Sans Mono 400 | G | 落ち着いたアプリ、設定の多い道具を冷たく見せたくない場合 |
+| S4 | Erode 500 ＋ 源暎こぶり明朝 400 | Switzer 400・500 ＋ Zen Kaku Gothic New 400・700 | — | 見出し F＋O、本文 F＋G | 作家や写真家の静かなポートフォリオ、書体の手触りで印象を作りたい場合 |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | S1 | 0.08／1.5 | 0.06／1.9 | 0／1.1 | 0／1.6 |
 | S2 | 0.04／1.5 | 0.05／2.0 | -0.01／1.2 | 0／1.65 |
 | S3 | 0.06／1.5 | 0.05／1.8 | -0.01／1.2 | 0／1.55 |
+| S4 | 0.08／1.5 | 0.05／1.85 | -0.01／1.15 | 0／1.6 |
 
 ### 精密
 
 字形が整理され、数字が読み取りやすい組である。情報の多い画面で、細部まで制御されている印象を出す。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| P1 | Chivo 600 ＋ BIZ UDPGothic 700 | Chivo 400 ＋ BIZ UDPGothic 400 | Chivo Mono 400 | ダッシュボード、管理画面、数字の多い表 |
-| P2 | IBM Plex Sans 600 ＋ IBM Plex Sans JP 600 | IBM Plex Sans 400 ＋ IBM Plex Sans JP 400 | IBM Plex Mono 400 | 技術資料、仕様書、データの多い画面 |
-| P3 | Host Grotesk 600 ＋ M PLUS 1 600 | Host Grotesk 400 ＋ M PLUS 1 400 | M PLUS 1 Code 400 | 開発者向けの道具、コードと日本語が混ざる画面 |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| P1 | Chivo 600 ＋ BIZ UDPGothic 700 | Chivo 400 ＋ BIZ UDPGothic 400 | Chivo Mono 400 | G | ダッシュボード、管理画面、数字の多い表 |
+| P2 | IBM Plex Sans 600 ＋ IBM Plex Sans JP 600 | IBM Plex Sans 400 ＋ IBM Plex Sans JP 400 | IBM Plex Mono 400 | G | 技術資料、仕様書、データの多い画面 |
+| P3 | Host Grotesk 600 ＋ M PLUS 1 600 | Host Grotesk 400 ＋ M PLUS 1 400 | M PLUS 1 Code 400 | G | 開発者向けの道具、コードと日本語が混ざる画面 |
+| P4 | Satoshi 500 ＋ LINE Seed JP 700 | Satoshi 400 ＋ LINE Seed JP 400 | Fragment Mono 400 | F＋G | サービスの紹介、製品の LP、精密だが硬すぎない画面 |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | P1 | 0.02／1.4 | 0.02／1.7 | -0.015／1.15 | 0／1.5 |
 | P2 | 0.02／1.4 | 0.03／1.75 | -0.01／1.15 | 0／1.5 |
 | P3 | 0.02／1.4 | 0.02／1.7 | -0.02／1.1 | 0／1.5 |
+| P4 | 0.02／1.4 | 0.03／1.75 | -0.02／1.1 | 0／1.55 |
 
 - P3 の M PLUS 1 Code は、仮名と漢字も持つ等幅書体である。コードの中の日本語のコメントや文字列も同じ書体で揃う。
+- P4 の LINE Seed JP は Google Fonts でも配信されている（OFL）。
 
 ### 遊びがある
 
 字形そのものに表情がある組である。見出しで遊び、本文は読みやすさを保つ。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| F1 | Bricolage Grotesque 800 ＋ Mochiy Pop One 400 | Bricolage Grotesque 400 ＋ M PLUS Rounded 1c 400・700 | — | イベントの告知、子ども向け、明るい知らせ |
-| F2 | Kalam 700 ＋ Yusei Magic 400 | Gabarito 400 ＋ Kiwi Maru 400・500 | — | 手書きの温度を出したい個人のサイト、店の手描き風の案内 |
-| F3 | Silkscreen 400 ＋ DotGothic16 400 | Sometype Mono 400 ＋ BIZ UDGothic 400・700 | Sometype Mono 400 | レトロなゲーム風の画面。小さな面積の遊びに限る |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| F1 | Bricolage Grotesque 800 ＋ Mochiy Pop One 400 | Bricolage Grotesque 400 ＋ M PLUS Rounded 1c 400・700 | — | G | イベントの告知、子ども向け、明るい知らせ |
+| F2 | Kalam 700 ＋ Yusei Magic 400 | Gabarito 400 ＋ Kiwi Maru 400・500 | — | G | 手書きの温度を出したい個人のサイト、店の手描き風の案内 |
+| F3 | Silkscreen 400 ＋ DotGothic16 400 | Sometype Mono 400 ＋ BIZ UDGothic 400・700 | Sometype Mono 400 | G | レトロなゲーム風の画面。小さな面積の遊びに限る |
+| F4 | Chillax 600 ＋ M PLUS Rounded 1c 800 | General Sans 400・500 ＋ M PLUS Rounded 1c 400・700 | — | F＋G | 個人の活動の紹介、気さくなサービスの LP |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | F1 | 0.02／1.3 | 0.05／1.8 | -0.02／1.05 | 0／1.55 |
 | F2 | 0.04／1.4 | 0.06／1.85 | 0／1.2 | 0.01／1.6 |
 | F3 | 0／1.5 | 0／1.75 | 0.02／1.4 | 0／1.6 |
+| F4 | 0.02／1.3 | 0.05／1.8 | -0.02／1.05 | 0／1.55 |
 
 - F2 の Kalam と Yusei Magic は見出しだけに使う。手書き風の書体で本文を組むと読めなくなる。
 - F3 の DotGothic16 は 16px の倍数（16px、32px、48px）で使う。それ以外の大きさでは点の大きさが不揃いになる。`palt` はかけず、字間は 0 のままにする。本文の BIZ UDGothic は仮名も等幅の書体で、等幅の欧文と字幅の感覚が揃う。画面全体をこの組で組まない。
@@ -167,49 +211,57 @@
 
 太く大きな字面で主張する組である。見出しを大きく使い、本文は落ち着かせて対比を作る。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| B1 | Unbounded 800 ＋ Dela Gothic One 400 | Archivo 400・600 ＋ Zen Kaku Gothic Antique 400 | Azeret Mono 400 | スポーツ、音楽のイベント、強い主張のある告知 |
-| B2 | Big Shoulders Display 800 ＋ M PLUS 1p 900 | Libre Franklin 400・600 ＋ M PLUS 1p 400 | Overpass Mono 400 | 報道、速報、ポスターのような画面 |
-| B3 | Bodoni Moda 700 ＋ Zen Old Mincho 900 | Albert Sans 400・600 ＋ Zen Kaku Gothic New 400 | — | ファッション、高級感のある強さ |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| B1 | Unbounded 800 ＋ Dela Gothic One 400 | Archivo 400・600 ＋ Zen Kaku Gothic Antique 400 | Azeret Mono 400 | G | スポーツ、音楽のイベント、強い主張のある告知 |
+| B2 | Big Shoulders Display 800 ＋ M PLUS 1p 900 | Libre Franklin 400・600 ＋ M PLUS 1p 400 | Overpass Mono 400 | G | 報道、速報、ポスターのような画面 |
+| B3 | Bodoni Moda 700 ＋ Zen Old Mincho 900 | Albert Sans 400・600 ＋ Zen Kaku Gothic New 400 | — | G | ファッション、高級感のある強さ |
+| B4 | Clash Display 700 ＋ Dela Gothic One 400 | General Sans 400・500 ＋ Zen Kaku Gothic Antique 400・700 | — | F＋G | ブランドの立ち上げ、制作会社や個人の強い打ち出し |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | B1 | 0／1.2 | 0.04／1.8 | -0.03／1.0 | 0／1.5 |
 | B2 | 0.01／1.2 | 0.04／1.8 | 0／1.0 | 0／1.55 |
 | B3 | 0.06／1.3 | 0.05／1.85 | -0.02／1.05 | 0／1.55 |
+| B4 | 0／1.15 | 0.04／1.8 | -0.03／0.95 | 0／1.5 |
 
 - B2 の Big Shoulders Display は幅の狭い書体で、大文字の英語見出しに向く。字間を詰めない。
 - B3 の Bodoni Moda は太い線と細い線の差が大きく、小さくすると細い線が消える。32px 以上の見出しだけに使う。
+- B4 の Clash Display は字幅の狭い太字で、大きな見出しで字間を詰めて塊にする。本文や 24px 未満には使わない。
 
 ### やわらかい
 
 丸みや筆の名残のある字形で、親しみと穏やかさを出す組である。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| W1 | Young Serif 400 ＋ Kaisei Opti 700 | Figtree 400・600 ＋ Zen Maru Gothic 400・700 | — | 暮らし、食、やさしい案内 |
-| W2 | Petrona 600 ＋ Klee One 600 | Petrona 400 ＋ Klee One 400 | — | 手仕事、教室、学びの場 |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| W1 | Young Serif 400 ＋ Kaisei Opti 700 | Figtree 400・600 ＋ Zen Maru Gothic 400・700 | — | G | 暮らし、食、やさしい案内 |
+| W2 | Petrona 600 ＋ Klee One 600 | Petrona 400 ＋ Klee One 400 | — | G | 手仕事、教室、学びの場 |
+| W3 | Gambetta 500 ＋ Zen Maru Gothic 700 | Author 400 ＋ Zen Maru Gothic 400・500 | — | F＋G | 店、暮らしの道具、親しみのある小さな事業 |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | W1 | 0.06／1.5 | 0.06／1.9 | -0.01／1.2 | 0.005／1.65 |
 | W2 | 0.06／1.5 | 0.06／1.9 | 0／1.2 | 0／1.65 |
+| W3 | 0.06／1.5 | 0.06／1.9 | -0.01／1.15 | 0／1.65 |
 
 ### 編集的
 
 雑誌や書籍の誌面のように、見出しと本文の対比と、文字の並びの美しさで見せる組である。
 
-| 記号 | 見出し | 本文 | 数字 | 合う場面 |
-|---|---|---|---|---|
-| E1 | Newsreader 600 ＋ Shippori Mincho B1 700 | Newsreader 400 ＋ Shippori Mincho B1 400 | — | 雑誌、長文の記事、文化系の読み物 |
-| E2 | Gloock 400 ＋ Kaisei Tokumin 800 | Source Serif 4 400・600 ＋ Noto Serif JP 400・600 | — | 批評、アーカイブ、展示や作品の解説 |
-| E3 | Familjen Grotesk 700 ＋ Zen Kaku Gothic New 700 | Spectral 400・600 ＋ Zen Old Mincho 400 | Fragment Mono 400 | ゴシックの見出しと明朝の本文で組む誌面風のサイト |
+| 記号 | 見出し | 本文 | 数字 | 配信元 | 合う場面 |
+|---|---|---|---|---|---|
+| E1 | Newsreader 600 ＋ Shippori Mincho B1 700 | Newsreader 400 ＋ Shippori Mincho B1 400 | — | G | 雑誌、長文の記事、文化系の読み物 |
+| E2 | Gloock 400 ＋ Kaisei Tokumin 800 | Source Serif 4 400・600 ＋ Noto Serif JP 400・600 | — | G | 批評、アーカイブ、展示や作品の解説 |
+| E3 | Familjen Grotesk 700 ＋ Zen Kaku Gothic New 700 | Spectral 400・600 ＋ Zen Old Mincho 400 | Fragment Mono 400 | G | ゴシックの見出しと明朝の本文で組む誌面風のサイト |
+| E4 | Basteleur 700 ＋ 源暎こぶり明朝 400 | Sentient 400 ＋ Zen Old Mincho 400 | — | 見出し O、本文 F＋G | 展示、文化の催し、個性の強い誌面風のサイト |
 
 | 記号 | 和文見出し 字間／行間 | 和文本文 字間／行間 | 欧文見出し 字間／行間 | 欧文本文 字間／行間 |
 |---|---|---|---|---|
 | E1 | 0.04／1.45 | 0.05／2.0 | -0.015／1.15 | 0／1.65 |
 | E2 | 0.02／1.35 | 0.06／2.0 | -0.02／1.05 | 0／1.7 |
 | E3 | 0.03／1.35 | 0.06／1.95 | -0.02／1.1 | 0／1.65 |
+| E4 | 0.05／1.4 | 0.06／2.0 | -0.01／1.1 | 0／1.7 |
 
 - 明朝の本文は、サイト系の本文サイズ（16〜18px）で使う。アプリ系の 14px 前後では横線が細く見えにくいため、アプリ系の本文にはゴシックの組を選ぶ。
+- E4 の Basteleur は欧文だけの書体で、Bold（700）と Moonlight（細い別のスタイル）の2つしかない。見出しの欧文だけに使う。源暎こぶり明朝は Regular の1ウェイトだけで、ttf で配られている。
