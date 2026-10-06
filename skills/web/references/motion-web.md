@@ -416,9 +416,10 @@ export function Intro({ name }: { name: string }) {
       };
       const mm = gsap.matchMedia();
       mm.add("(prefers-reduced-motion: no-preference)", () => {
+        // 名前の登場 0.5s、間 0.1s、幕の退場 0.5s で、全体を 1.1s に収める
         gsap.timeline({ onComplete: finish })
-          .from(".js-intro-name", { yPercent: 100, duration: 0.6, ease: "outQuint" })
-          .to(root.current, { clipPath: "inset(0 0 100% 0)", duration: 0.6, ease: "inOutQuart" }, "+=0.1");
+          .from(".js-intro-name", { yPercent: 100, duration: 0.5, ease: "outQuint" })
+          .to(root.current, { clipPath: "inset(0 0 100% 0)", duration: 0.5, ease: "inOutQuart" }, "+=0.1");
       });
       mm.add("(prefers-reduced-motion: reduce)", () => {
         gsap.to(root.current, { opacity: 0, duration: 0.12, ease: "outQuint", onComplete: finish });
