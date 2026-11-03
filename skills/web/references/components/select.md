@@ -10,6 +10,7 @@
 ## 守ること
 
 - 土台は React Aria の `Select` にする。選択肢が10個を超える場合は、検索欄付きの `ComboBox` にする。
+- 選択肢の一覧は高さの上限（`max-h-72`）を決め、スクロールバーの書き方を `references/components/scrollbar.md` の `scroll-area` クラスで付ける。スクロールバーが現れても選択肢の文字がずれないようにするためである。
 - 閉じた状態のボタンには、現在の値（なければ「選択する」などの案内）と、開閉できることを示すアイコン（Iconify の `ph:caret-up-down` など）を表示する（`references/intuitive-ui.md` の1.3節）。
 - 一覧の開閉は、`--duration-base`（180ms）と `--ease-out-quint` で、上下 4px の移動と不透明度を同時に変える。一覧はボタンの側から出てくる向きに動かす（下に開くときは上から、上に開くときは下から）。閉じるときは `--duration-fast`（120ms）で、開くときより短くする。
 - 動きを減らす設定のときは、移動をやめ、不透明度の変化だけを `--duration-fast` で行う。
@@ -78,7 +79,7 @@ export function SyncIntervalSelect() {
         offset={4}
         className={`w-(--trigger-width) rounded-lg border border-line bg-surface-2 p-1 shadow-float ${popoverMotion}`}
       >
-        <ListBox items={intervals} className="max-h-72 overflow-auto outline-none">
+        <ListBox items={intervals} className="scroll-area max-h-72 outline-none">
           {(item) => (
             <ListBoxItem id={item.id} textValue={item.name} className={optionClass}>
               {({ isSelected }) => (
@@ -142,7 +143,7 @@ export function RegionComboBox() {
       </div>
       <Popover offset={4} className={`w-(--trigger-width) rounded-lg border border-line bg-surface-2 p-1 shadow-float ${popoverMotion}`}>
         <ListBox
-          className="max-h-72 overflow-auto outline-none"
+          className="scroll-area max-h-72 outline-none"
           renderEmptyState={() => <p className="px-2 py-2 text-sm text-text-muted">一致する都道府県がない</p>}
         >
           {(item: { id: string; name: string }) => (

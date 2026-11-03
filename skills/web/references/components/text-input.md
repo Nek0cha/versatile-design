@@ -11,6 +11,7 @@
 - ラベルは入力欄の上に常に表示する（`text-text-muted`）。補足の説明はラベルと入力欄の間か入力欄の下に置く。
 - エラーは入力欄の下に、危険の色（`--color-danger`）の文字とアイコン（Iconify の `ph:warning-circle` など）で出す。入力欄の枠も危険の色にする。色だけで伝えない（`references/intuitive-ui.md` の2.5節）。
 - エラーの文章は、何が起きたかと直し方を書き、選択してコピーできるまま残す（`select-none` を付けない）。
+- 説明とエラーは入力欄の下の同じ場所で入れ替え、その場所の高さを1行分（`min-h-[1lh]`）最初から確保する。説明のない欄でも場所を確保し、エラーが出たときに下の欄やボタンを押し下げない（`../design-core/references/anti-patterns.md` の X26）。エラーの文章は、欄の幅で1行に収まる長さにする。
 - 検証は入力の途中では行わず、欄を離れたときか送信のときに行う。React Aria の `TextField` に `validationBehavior="aria"` を指定し、エラーの状態は自分で持って `isInvalid` で渡す。エラーの文章は React Aria が `aria-invalid` と `aria-describedby` で入力欄につなぐ。`validate` は値が変わるたびに検査し直すため、入力の途中でエラーが出る。
 - フォーカスリングはアクセント（`--color-accent`）の 2px の線を `outline-offset: 2px` で付ける。入力欄は文字を打つ場所なので、マウスで押したときもフォーカスリングを出す（`data-focused`）。
 - 入力欄の枠は操作できる部品の枠（`border-line-control`、3:1 以上）にする。区切り線の `border-line` を使わない（`../design-core/references/color.md` の5節）。
@@ -24,6 +25,7 @@
 - 1文字打つたびにエラーを出すこと。
 - 「入力内容に誤りがあります」だけのエラー、入力欄から離れた場所（画面の上端だけ）に出すエラー。
 - エラーのときに入力した内容を消すこと。
+- エラーを出すときに初めて場所を作り、下の欄やボタンを押し下げること。
 - 枠を消して下線だけにするなど、押せる場所が分からない入力欄。
 
 ## コード例
@@ -72,13 +74,16 @@ export function EmailField({ error, onErrorChange }: { error: string | null; onE
           "data-disabled:opacity-50",
         ].join(" ")}
       />
-      <Text slot="description" className="text-xs text-text-muted group-data-invalid:hidden">
-        更新のお知らせだけを送る。
-      </Text>
-      <FieldError className="flex items-start gap-1.5 text-xs text-danger">
-        <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
-        <span>{error}</span>
-      </FieldError>
+      {/* 説明とエラーは同じ場所で入れ替える。1行分の高さを最初から確保し、エラーが出ても下の部品を動かさない */}
+      <div className="min-h-[1lh] text-xs">
+        <Text slot="description" className="text-text-muted group-data-invalid:hidden">
+          更新のお知らせだけを送る。
+        </Text>
+        <FieldError className="flex items-start gap-1.5 text-danger">
+          <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
+          <span>{error}</span>
+        </FieldError>
+      </div>
     </TextField>
   );
 }
@@ -144,13 +149,14 @@ export function NoteField() {
           "data-invalid:border-danger",
         ].join(" ")}
       />
-      <div className="flex items-start justify-between gap-3">
-        <FieldError className="flex items-start gap-1.5 text-xs text-danger">
+      {/* エラーと残りの文字数を同じ行に置き、エラーが出ても行の高さを変えない */}
+      <div className="flex min-h-[1lh] items-start justify-between gap-3 text-xs">
+        <FieldError className="flex items-start gap-1.5 text-danger">
           <Icon icon="ph:warning-circle" aria-hidden className="mt-px size-3.5 shrink-0" />
           <span>{error}</span>
         </FieldError>
         {/* 残りの文字数は入力中も更新する。数がマイナスになったら危険の色にするが、エラーの文章は欄を離れたときに出す */}
-        <Text slot="description" className={`ml-auto text-xs tabular-nums ${rest < 0 ? "text-danger" : "text-text-muted"}`}>
+        <Text slot="description" className={`ml-auto tabular-nums ${rest < 0 ? "text-danger" : "text-text-muted"}`}>
           残り {rest} 文字
         </Text>
       </div>
@@ -169,3 +175,4 @@ export function NoteField() {
 4. エラーの文章をドラッグして選択し、コピーできるか。
 5. フォーカスリングがアクセントの 2px で、入力欄から 2px 離れているか。ダークとライトの両方で、入力欄の枠が背景から見分けられるか。
 6. 入力欄の幅が、入る文字の量に合っているか。
+7. エラーが出る前と後のスクリーンショットを重ねて、入力欄より下の部品の位置が変わらないか。

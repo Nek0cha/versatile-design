@@ -492,6 +492,66 @@ const defaultFavicon = {
   },
 };
 
+// ---------------------------------------------------------------------------
+// 状態の変化で周りがずれるもの
+
+// クラスの値を、接頭辞付きのクラス名の並びに分ける（式の中の文字列も対象にする）
+function classTokens(value) {
+  return value.split(/[\s"'`{}(),+?]+/).filter(Boolean);
+}
+
+// 接頭辞のうち、状態で切り替わるもの（hover:、data-selected:、aria-[current=page]:、group-hover: など）
+const STATE_VARIANT = /^(?:hover|focus|focus-visible|focus-within|active|checked|open|selected|pressed|current|data-.+|aria-.+|group-.+|peer-.+|has-.+|\[.+\])$/;
+const WEIGHT_UTILITY = /^font-(?:thin|extralight|light|normal|medium|semibold|bold|extrabold|black|\[\d+\])$/;
+
+// `md:hover:font-bold` を接頭辞の配列と本体に分ける。角括弧の中のコロンでは分けない
+function splitVariants(token) {
+  const parts = token.split(/:(?![^[]*\])/);
+  return { variants: parts.slice(0, -1), utility: parts[parts.length - 1] };
+}
+
+const stateFontWeight = {
+  id: 'state-font-weight',
+  extensions: MARKUP,
+  check(source) {
+    const message = '状態の変化で文字の太さが変わり、ボタンやタブの幅が変わって隣の部品がずれる。状態は色、背景、下線、印で示し、太さは固定する';
+    const out = [];
+    for (const { index, value } of classAttributes(source)) {
+      const hit = classTokens(value).some((token) => {
+        const { variants, utility } = splitVariants(token);
+        return WEIGHT_UTILITY.test(utility) && variants.some((v) => STATE_VARIANT.test(v));
+      });
+      if (hit) out.push({ index, message });
+    }
+    return out;
+  },
+};
+
+const GUTTER_MESSAGE =
+  'スクロールする領域に scrollbar-gutter の指定がなく、スクロールバーが現れたときに中身が横にずれる。scroll-area のクラス（references/components/scrollbar.md）か scrollbar-gutter: stable を付ける';
+
+const scrollWithoutGutter = {
+  id: 'scroll-without-gutter',
+  extensions: ['.tsx', '.jsx', '.html', '.css'],
+  check(source) {
+    const out = [];
+    for (const { index, value } of classAttributes(source)) {
+      const utilities = classTokens(value).map((token) => splitVariants(token).utility);
+      const scrolls = utilities.some((u) => u === 'overflow-auto' || u === 'overflow-y-auto');
+      const reserved = utilities.some((u) => u === 'scroll-area' || u.includes('scrollbar-gutter'));
+      if (scrolls && !reserved) out.push({ index, message: GUTTER_MESSAGE });
+    }
+    for (const { index, body } of cssBlocks(source)) {
+      // overflow の2つ目の値は縦方向。overflow-y と overflow-block は縦方向そのもの
+      const scrolls =
+        /(?<![\w-])overflow(?:-y|-block)\s*:\s*auto\b/.test(body) ||
+        /(?<![\w-])overflow\s*:\s*(?:auto\s*(?:;|$|!)|[\w-]+\s+auto\b)/.test(body);
+      if (scrolls && !/scrollbar-gutter\s*:/.test(body)) out.push({ index, message: GUTTER_MESSAGE });
+    }
+    return out;
+  },
+};
+
 export const rules = [
   textArrow,
   emojiIcon,
@@ -506,6 +566,8 @@ export const rules = [
   monoLabel,
   roundedAccentRail,
   defaultFavicon,
+  stateFontWeight,
+  scrollWithoutGutter,
 ];
 
 // ---------------------------------------------------------------------------

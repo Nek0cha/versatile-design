@@ -28,6 +28,8 @@ test('exports the expected rule ids', () => {
     'native-select',
     'purple-blue-gradient',
     'rounded-accent-rail',
+    'scroll-without-gutter',
+    'state-font-weight',
     'tailwind-default-palette',
     'text-arrow',
     'transition-all',
@@ -401,4 +403,39 @@ test('rounded-accent-rail honours an explicit none override on the rail side', (
   assert.equal(hits('<div className="rounded-md rounded-e-none border-e-4" />', 'x.tsx', 'rounded-accent-rail').length, 0);
   assert.equal(hits('<div className="rounded-md rounded-tl-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 1);
   assert.equal(hits('<div className="rounded-md rounded-r-none border-l-4" />', 'x.tsx', 'rounded-accent-rail').length, 1);
+});
+
+// state-font-weight
+test('state-font-weight flags font weights that change with state', () => {
+  assert.equal(hits('<button className="text-sm hover:font-semibold" />', 'x.tsx', 'state-font-weight').length, 1);
+  assert.equal(hits('<Tab className="data-selected:font-bold" />', 'x.tsx', 'state-font-weight').length, 1);
+  assert.equal(hits('<a class="aria-[current=page]:font-medium" />', 'x.html', 'state-font-weight').length, 1);
+  assert.equal(hits('<li className="group-hover:font-bold" />', 'x.tsx', 'state-font-weight').length, 1);
+  assert.equal(hits('<a className={`px-2 ${active ? "font-bold" : ""} md:hover:font-[650]`} />', 'x.tsx', 'state-font-weight').length, 1);
+  assert.match(hits('<a className="hover:font-bold" />', 'x.tsx', 'state-font-weight')[0].message, /。/);
+});
+test('state-font-weight accepts fixed weights and responsive weights', () => {
+  assert.equal(hits('<button className="font-semibold hover:bg-surface-2" />', 'x.tsx', 'state-font-weight').length, 0);
+  assert.equal(hits('<h1 className="font-medium md:font-bold" />', 'x.tsx', 'state-font-weight').length, 0);
+  assert.equal(hits('<p className="dark:font-light" />', 'x.tsx', 'state-font-weight').length, 0);
+  assert.equal(hits('<p className="hover:font-display" />', 'x.tsx', 'state-font-weight').length, 0);
+});
+
+// scroll-without-gutter
+test('scroll-without-gutter flags scroll areas without a reserved gutter', () => {
+  assert.equal(hits('<ul className="max-h-72 overflow-auto" />', 'x.tsx', 'scroll-without-gutter').length, 1);
+  assert.equal(hits('<div class="h-full overflow-y-auto" />', 'x.html', 'scroll-without-gutter').length, 1);
+  assert.equal(hits('<div className="md:overflow-y-auto" />', 'x.tsx', 'scroll-without-gutter').length, 1);
+  assert.equal(hits('.list { max-height: 20rem; overflow-y: auto; }', 'x.css', 'scroll-without-gutter').length, 1);
+  assert.equal(hits('.list { overflow: hidden auto; }', 'x.css', 'scroll-without-gutter').length, 1);
+  assert.match(hits('.list { overflow: auto; }', 'x.css', 'scroll-without-gutter')[0].message, /。/);
+});
+test('scroll-without-gutter accepts reserved gutters and other overflow values', () => {
+  assert.equal(hits('<ul className="scroll-area max-h-72" />', 'x.tsx', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('<ul className="max-h-72 overflow-y-auto [scrollbar-gutter:stable]" />', 'x.tsx', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('<div className="overflow-x-auto" />', 'x.tsx', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('<div className="overflow-hidden overflow-y-scroll" />', 'x.tsx', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('.list { overflow-y: auto; scrollbar-gutter: stable; }', 'x.css', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('.list { overflow-x: auto; }', 'x.css', 'scroll-without-gutter').length, 0);
+  assert.equal(hits('.list { overflow: auto hidden; }', 'x.css', 'scroll-without-gutter').length, 0);
 });
