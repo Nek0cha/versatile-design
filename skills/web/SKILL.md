@@ -1,6 +1,6 @@
 ---
 name: web
-description: React と Tailwind CSS（v4）で、AI 感のない Web サイトと Web アプリの UI を作るときに使う。ポートフォリオ、企業サイト、LP などのサイト系と、ダッシュボード、ツール、設定画面、管理画面などのアプリ系を画面ごとに判定し、コンセプトの宣言、@theme のトークン、React Aria Components による部品のレシピ、禁止パターンの自動チェック、PC 幅とスマートフォン幅のスクリーンショットによる自己批評までを手順として定める。最初に design-core スキルを読む。English keywords - web design, landing page, portfolio, dashboard, web app UI, React, Tailwind, component.
+description: React と Tailwind CSS（v4）で、AI 感のない Web サイトと Web アプリの UI を作るときに使う。ポートフォリオ、企業サイト、LP などのサイト系と、ダッシュボード、ツール、設定画面、管理画面などのアプリ系を画面ごとに判定し、コンセプトの宣言、@theme のトークン、React Aria Components による部品のレシピ、禁止パターンの自動チェック、PC 幅とスマートフォン幅のスクリーンショットによる自己批評までを手順として定める。「設定画面を見やすくして」「もう少し落ち着かせて」「リリース前に仕上げて」「どこが悪い？」のような、既存の画面を直す依頼と評価の依頼にも使う。最初に design-core スキルを読む。English keywords - web design, refine, polish, UI review, landing page, portfolio, dashboard, web app UI, React, Tailwind, component.
 ---
 
 # web
@@ -10,6 +10,17 @@ React ＋ Tailwind CSS（v4）＋ React Aria Components で、Web のサイト�
 - 下の6つの手順を順に行う。references は最初にすべて読まず、各手順に書かれたファイルだけを、その手順に来たときに読む。
 - パスはこのファイルのあるディレクトリ（以下「スキルのディレクトリ」）を基準にしている。
 - 指示が食い違ったときは、プロンプトの指示 ＞ ユーザーの調整欄 ＞ 各 references の「スキル作者の調整欄」の順に従う。
+
+## 依頼の種類
+
+最初に、依頼が次のどちらかを決める。
+
+| 依頼 | 例 | 進め方 |
+|---|---|---|
+| 新しく作る、作り直す | 「カフェのサイトを作って」「デザインを一新して」 | 下の手順1〜6を順に行う |
+| すでにある画面を直す、評価する | 「設定画面を見やすくして」「トップを落ち着かせて」「仕上げて」「どこが悪い？」 | 手順1を行ってから `references/refine.md` に従う。手順2〜4の代わりに、依頼の目的に合った手順書を1つ読む。検証と報告の方法は `references/refine.md` の4節と5節に従う |
+
+作業ディレクトリに対象の画面があり、依頼がその見た目や使い勝手を変えるものなら「直す」として扱う。
 
 ## 手順1 読み込み
 
@@ -94,7 +105,7 @@ node <スキルのディレクトリ>/scripts/lint-design.mjs <生成物のデ�
 
 - `<生成物のディレクトリ>` には、`src` など生成したコードのあるディレクトリ（`index.html` があればそれも）を渡す。`node_modules`、`dist`、`build`、`.git`、`.next` は自動で除外される。
 - 終了コード 0 は違反なし、1 は違反あり、2 は引数の誤りである。違反は `ファイル:行番号  ルール名  理由` の形で出る。違反がゼロになるまで直す。
-- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`mono-label`、`rounded-accent-rail`、`default-favicon`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
+- 検出するルールは `text-arrow`、`emoji-icon`、`tailwind-default-palette`、`gradient-text`、`purple-blue-gradient`、`generic-font-only`、`native-select`、`native-number-input`、`transition-all`、`default-easing`、`mono-label`、`rounded-accent-rail`、`default-favicon`、`state-font-weight`、`scroll-without-gutter`、`no-reduced-motion` と、理由のない抑制コメントを報告する `suppression-without-reason` である。各ルールに対応する禁止事項は `anti-patterns.md` の「検出」欄にある。
 - 抑制は、条件付き（K）の項目を条件どおりに使う場合など、機能上の理由を1文で言える場合に限る。書き方は下の「抑制コメントの置き場所」に従う。抑制したものはすべて報告に書く。
 
 #### 抑制コメントの置き場所
@@ -123,7 +134,7 @@ node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業
 ```
 
 - 既定で PC 幅 1440px とスマートフォン幅 390px、`dark` と `light` の両テーマを撮り、`<作業用ディレクトリ>/<幅>-<テーマ>.png` に保存する。画面の高さは全体（フルページ）である。
-- テーマは、手順2で決めた対応テーマだけを `--themes` で指定する（例：「ダークのみ」なら `--themes dark`）。幅は変えない。
+- テーマは、手順2で決めた対応テーマだけを `--themes` で指定する（例：「ダークのみ」なら `--themes dark`）。幅は変えない。例外は、幅による崩れを直す依頼（`references/refine/responsive.md`）だけである。
 - `<URL>` にはローカルの HTML ファイルのパスや、`localhost:5173` のようなホストとポートも渡せる（後者は `http://` を補う）。画面が複数あるときは、画面ごとに別の作業用ディレクトリへ撮る。
 - 撮影の前に、フォントの読み込みを待ち、ページの下端までスクロールして戻り（スクロールで現れる要素を表示させるため）、繰り返さないアニメーションの完了を待つ。そのうえで `--wait <ミリ秒>`（既定は 1500）だけ待ってから撮る。入場の動きが長いページで途中の状態が写る場合は、`--wait` を増やして撮り直す。
 - `<作業用ディレクトリ>` は生成物のリポジトリの外（一時ディレクトリなど）に置く。スクリーンショットをコミットしない。
@@ -138,7 +149,7 @@ node <スキルのディレクトリ>/scripts/screenshot.mjs <URL> --out <作業
 
 ### 5.3 自己批評（最大2周）
 
-`critique.md` の C1〜C12 に、撮った画像だけを見て順に答える。
+`critique.md` の C1〜C13 に順に答える。C1〜C12 は撮った画像だけを見て答え、C13 は状態を変えた前後の画像を撮って比べる。
 
 1. 不合格の項目を直す。
 2. 直したら 5.1 の自動チェックを再実行し、5.2 のスクリーンショットを撮り直す。ここまでで1周とする。
