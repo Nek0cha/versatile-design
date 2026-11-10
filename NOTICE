@@ -1,0 +1,20 @@
+versatile-design
+
+このリポジトリには、第三者の著作物から派生した内容が含まれる。
+
+## Impeccable
+
+次のファイルの一部は、Impeccable（https://github.com/pbakaus/impeccable）の
+スキルの参照資料（reference/new-work.md、shape.md、document.md、extract.md、
+mode-persuade.md、mode-operate.md、mode-read.md）の内容を日本語に翻訳し、
+このスキル集の方針に合わせて取捨選択と書き換えを行ったものである。
+
+- skills/design-core/references/concept-brief.md（8節）
+- skills/design-core/references/anti-patterns.md（W5）
+- skills/design-core/references/critique.md（C2 の記憶テスト）
+- skills/design-core/references/design-system.md
+- skills/web/references/mode-site.md（10節）
+- skills/web/references/mode-app.md（13節）
+
+Copyright 2025 Paul Bakaus
+Licensed under the Apache License, Version 2.0.
