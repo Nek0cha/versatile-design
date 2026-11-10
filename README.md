@@ -15,6 +15,7 @@ Claude に「AI 感のない」プロ水準のデザインを出力させるた�
 - サイト系の依頼では、作る前にコンセプトの案が 2〜3 個と技術スタックの提案が出て、選んでから作られる。「おまかせで」と書けば、選ばずに進む。
 - キャッチコピー、見出し、本文は、`web` の `references/copy.md` の書き方に従って、依頼に書かれた事実から書かれる。依頼の情報が足りない場所と、ボタンなどの短い文言は、ダミーと分かる形（「ここに見出し」など）で置かれる。
 - すでにある画面は、「設定画面を見やすくして」「もう少し落ち着かせて」「リリース前に仕上げて」「どこが悪い？」のように普通の言葉で頼めば直せる。依頼は「見やすくする」「落ち着かせる」「印象を強くする」「仕上げる」「壊れにくくする」「幅に合わせる」「評価だけする」のどれかに振り分けられ、その目的の手順書だけが読まれる。今の見た目の系統、文章、機能は引き継がれる（`web` の `references/refine.md`）。
+- プロジェクトのルートに `DESIGN.md` があれば、その見た目の系統が引き継がれる。「DESIGN.md を作って」「デザインシステムを書き出して」と頼めば、作った画面の系統を `DESIGN.md`（Google の DESIGN.md 形式）に書き出せる（`design-core` の `references/design-system.md`）。
 - このスキル集は、frontend-design スキルと併用しない前提で作っている。
 
 ## スキルの有無による違い
@@ -142,6 +143,7 @@ claude plugin validate .   # プラグインと配布元の設定ファイル（
 
 - `npm test` のスクリーンショットのテストは、ブラウザを起動できない環境ではスキップされる。手元の Chromium を使う場合は `CHROMIUM_PATH=<パス> npm test` とする。
 - `npm run check:skills` で実例名の匿名化を検査するには、禁止語を1行に1つ書いたファイルを環境変数 `REFERENCE_DENYLIST` で渡す（例：`REFERENCE_DENYLIST=<ファイル> npm run check:skills`）。対象は `skills/`、`docs/`、`README.md` である。指定がなければ匿名化の検査は省略され、指定したファイルが存在しないか空の場合は警告を出して省略する。禁止語のファイルはリポジトリに含めない。
+- スキルの内容を変えたら、`.claude-plugin/plugin.json` の `version` を上げる。Claude Code は `version` が変わったときだけプラグインを更新するため、上げないと `/plugin marketplace update` をしても利用者に変更が届かない。機能の追加はマイナー（1.1.0 → 1.2.0）、直しはパッチ（1.1.0 → 1.1.1）を上げる。
 - 禁止パターンを増やすときは、`skills/design-core/references/anti-patterns.md` の「スキル作者の調整欄」の手順に従い、機械で判定できるものは `skills/web/scripts/lib/lint-rules.mjs` にルールを足す。
 
 ## 実例の取り扱い方針
@@ -158,4 +160,4 @@ claude plugin validate .   # プラグインと配布元の設定ファイル（
 
 ## ライセンス
 
-`LICENSE` を参照のこと。
+`LICENSE` を参照のこと。コンセプトの案の出し方、サイト系とアプリ系での世界観の使い方、`DESIGN.md` の扱いの一部は、[Impeccable](https://github.com/pbakaus/impeccable)（Apache License 2.0）の内容を翻訳し、改変したものである。詳細は `NOTICE` を参照のこと。
