@@ -92,8 +92,11 @@ observations は、mode のファイルの原則と数値の根拠となる観�
 
 - 動きを付けるときは `references/motion-web.md` を読む。アプリ系は Motion、サイト系は GSAP（必要なら Lenis）を使い、`prefers-reduced-motion` に必ず対応する。
 - コンセプトの記憶のフックが WebGL の演出である場合だけ、`references/webgl.md` を読む。`three` だけを使い、同ファイルの1節の決まりをすべて守る。
+- 記憶のフックが、画像を文字（ASCII）や網点に崩す表現、解像度を段階的に落とす表現、崩れた画像を窓から覗かせる仕掛けである場合だけ、`references/textmode.md` を読む。
+- ボタンや枠を自作の角丸（squircle）にする場合と、ロゴや名前をフォントを使わずに図形で組む場合は、`references/custom-shapes.md` を読む。
 - 利用者が渡していないキャッチコピー、サブコピー、セクションの見出し、本文は、`references/copy.md` に従って依頼の事実から書く。書けない場所と、ボタンなどの短い文言は、`../design-core/SKILL.md` の5節に従ってダミーと分かる仮の文章にする。
 - ファビコンを必ず一緒に作る。`references/favicon.md` に従い、コンセプトとトークンの色から `favicon.svg` を作って指定し、雛形のファビコンと `<title>` を置き換える。
+- 公開する予定のあるサイト系の画面で、依頼に OGP 画像（SNS で共有されたときの画像）が含まれる場合は、`references/favicon.md` の6節に従って作る。
 - 生成物に作業用のファイル（スクリーンショットなど）を含めない。
 
 ## 手順5 検証する
