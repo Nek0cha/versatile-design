@@ -66,3 +66,38 @@
 - 自動チェック（手順5.1）の `default-favicon` が出ていない。`index.html` に `rel="icon"` の指定がない場合と、雛形のファビコンを指している場合に検出される。
 - `favicon.svg` をブラウザで直接開いて、形が崩れていない（スクリーンショットの撮影のスクリプトに、ファイルのパスを渡して撮ってもよい）。
 - 報告の「実施した検証」に、作ったファイルと、作らなかったファイルとその理由を書く。
+
+## 6. OGP 画像
+
+公開する予定のあるサイト系の画面では、SNS で共有されたときの画像（`ogp.png`、1200×630px）もファビコンと同じ考え方で作る。依頼にない場合は作らず、作れることを報告で伝える。
+
+### 6.1 中身
+
+- 記憶のフックを、縮めて1枚に収める。サイトのスクリーンショットをそのまま縮めない。小さく表示されたとき、何も読めない画像になる。
+- ロゴ（または名前）と、フックの縮図の2つに絞る。説明文は1行まで、または入れない。
+- 部品は画面と同じものを使う。ロゴのパス、squircle の関数、変換の関数（`references/textmode.md` など）を、画像を作るスクリプトから読み込む。別に描き直すと、画面と画像で形がずれる。
+- 色はトークンの値だけを使う。
+
+### 6.2 作り方
+
+1. Node のスクリプトで 1200×630 の SVG を組み立てる。写真は Base64 にして `<image>` で埋め込む。
+2. SVG を PNG に書き出す。Playwright があればそれで撮る。macOS では `sips -s format png ogp.svg --out public/ogp.png` で書き出せる。`qlmanage -t` は正方形のサムネイルとして描くため、拡大されて切れる。使わない。
+3. 書き出した PNG を Read ツールなどで開き、寸法（1200×630）と中身を確かめる。
+4. スクリプトを `package.json` の `scripts` に登録し、作り直せるようにする。
+
+### 6.3 置き方
+
+```html
+<meta property="og:type" content="website" />
+<meta property="og:title" content="（サイト名）" />
+<meta property="og:description" content="（1文）" />
+<meta property="og:url" content="%VITE_SITE_URL%/" />
+<meta property="og:image" content="%VITE_SITE_URL%/ogp.png" />
+<meta property="og:image:width" content="1200" />
+<meta property="og:image:height" content="630" />
+<meta property="og:image:alt" content="（画像の内容を1文で）" />
+<meta name="twitter:card" content="summary_large_image" />
+```
+
+- `og:image` は絶対 URL でなければ読まれない。公開先のドメインが決まっていなければ、Vite では `.env` の `VITE_SITE_URL` に仮の値を置き、`index.html` の `%VITE_SITE_URL%` で差し込む。報告に、公開前にドメインへ書き換えることを書く。
+- Next.js では `app/opengraph-image.png` を置けば自動で指定される。
